@@ -8,6 +8,8 @@ package com.mycompany.zombieescape.modelo;
  *
  * @author dylnr
  */
+
+//Clase para donde tiene que ir cada personaje
 public class Direccion {
     public static final Direccion ARRIBA    = new Direccion(0, -1);
     public static final Direccion ABAJO     = new Direccion(0, 1);
