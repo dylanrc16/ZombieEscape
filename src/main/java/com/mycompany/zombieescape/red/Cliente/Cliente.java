@@ -1,0 +1,57 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package com.mycompany.zombieescape.red.Cliente;
+
+import com.mycompany.zombieescape.red.Models.Mensaje;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+import javax.swing.JOptionPane;
+
+/**
+ 1 objectOut
+ 1 objectInput
+ 1 DataOut
+ 1 DataInput
+ */
+public class Cliente {
+    private final String IP = "localhost";
+    private final int PORT = 8084;    
+    
+    Socket socket;
+    ClienteFrame refPantalla;
+    
+    ThreadCliente threadCliente;
+    
+    public ObjectOutputStream escritorDeObjetos;
+    
+    String nombre;
+
+    public Cliente(ClienteFrame refPantalla) {
+        this.refPantalla = refPantalla;
+        this.conectarCliente();
+    }
+    
+    private void conectarCliente(){
+        try {
+            socket = new Socket(IP, PORT);
+            escritorDeObjetos = new ObjectOutputStream(socket.getOutputStream());
+            
+            threadCliente = new ThreadCliente(this, socket);
+            threadCliente.start();
+            
+            nombre = JOptionPane.showInputDialog(null, "Digite su nick");
+            //NOMBRE   Diego
+            Mensaje msg = new Mensaje("NOMBRE", 1);
+            msg.parametros[0] = nombre;
+            escritorDeObjetos.writeObject(msg);                 
+        } catch (IOException ex) {
+            System.getLogger(Cliente.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+    }
+    
+    
+    
+}
