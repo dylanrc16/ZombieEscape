@@ -8,6 +8,7 @@ import com.mycompany.zombieescape.red.Cliente.Cliente;
 import com.mycompany.zombieescape.red.Cliente.VentanaLogin;
 import com.mycompany.zombieescape.red.Models.Mensaje;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 /**
@@ -19,6 +20,7 @@ public class VentanaLogin extends javax.swing.JFrame {
 
     
     private Cliente cliente;
+    public String nombre;
     
     public VentanaLogin() {
         initComponents();
@@ -52,7 +54,6 @@ public class VentanaLogin extends javax.swing.JFrame {
         lblNombre = new javax.swing.JLabel();
         txtNombre = new javax.swing.JTextField();
         lblIp = new javax.swing.JLabel();
-        txtIp = new javax.swing.JTextField();
         lblRol = new javax.swing.JLabel();
         panelRoles = new javax.swing.JPanel();
         rbSuperviviente = new javax.swing.JRadioButton();
@@ -125,27 +126,12 @@ public class VentanaLogin extends javax.swing.JFrame {
 
         lblIp.setFont(new java.awt.Font("SansSerif", 1, 12)); // NOI18N
         lblIp.setForeground(new java.awt.Color(180, 180, 185));
-        lblIp.setText("IP DEL SERVIDOR");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 0);
         panelFondo.add(lblIp, gridBagConstraints);
-
-        txtIp.setBackground(new java.awt.Color(40, 40, 45));
-        txtIp.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(70, 70, 78)), javax.swing.BorderFactory.createEmptyBorder(8, 10, 8, 10)));
-        txtIp.setCaretColor(new java.awt.Color(230, 230, 230));
-        txtIp.setColumns(22);
-        txtIp.setFont(new java.awt.Font("SansSerif", 0, 15)); // NOI18N
-        txtIp.setForeground(new java.awt.Color(230, 230, 230));
-        txtIp.setText("localhost");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 10, 0);
-        panelFondo.add(txtIp, gridBagConstraints);
 
         lblRol.setFont(new java.awt.Font("SansSerif", 1, 12)); // NOI18N
         lblRol.setForeground(new java.awt.Color(180, 180, 185));
@@ -236,8 +222,10 @@ public class VentanaLogin extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnEntrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEntrarActionPerformed
-        String nombre = txtNombre.getText().trim();
-        String ip = txtIp.getText().trim();
+
+        nombre = txtNombre.getText().trim();
+        
+        cliente.conectarCliente();
 
         if (nombre.isEmpty()) {
             lblError.setText("Escriba un nombre.");
@@ -247,14 +235,13 @@ public class VentanaLogin extends javax.swing.JFrame {
             lblError.setText("El nombre puede tener máximo " + MAX_NOMBRE + " caracteres.");
             return;
         }
-        if (ip.isEmpty()) {
-            lblError.setText("Escriba la IP del servidor.");
-            return;
-        }
+       
 
         lblError.setText(" ");
         String rol = rbSniper.isSelected() ? "SNIPER" : "SUPERVIVIENTE";
-        iniciarJuego(nombre, ip, rol);
+        iniciarJuego(nombre, rol);
+        
+        
         
         try {
             Mensaje msg = new Mensaje("MENSAJE", 2);
@@ -276,14 +263,14 @@ public class VentanaLogin extends javax.swing.JFrame {
     }//GEN-LAST:event_btnEntrarMouseExited
 
     // Aquí se conecta con la parte de red
-    private void iniciarJuego(String nombre, String ip, String rol) {
+    private void iniciarJuego(String nombre, String rol) {
         // Cuando Cliente esté listo:
         // Cliente cliente = new Cliente(nombre, ip, rol);
         // new VentanaJuego(cliente).setVisible(true);
         // dispose();
 
         javax.swing.JOptionPane.showMessageDialog(this,
-                "Nombre: " + nombre + "\nServidor: " + ip + "\nRol: " + rol);
+                "Nombre: " + nombre + "\nRol: " + rol);
     }
 
     /**
@@ -309,7 +296,6 @@ public class VentanaLogin extends javax.swing.JFrame {
     private javax.swing.JRadioButton rbSniper;
     private javax.swing.JRadioButton rbSuperviviente;
     private javax.swing.JSeparator separador;
-    private javax.swing.JTextField txtIp;
     private javax.swing.JTextField txtNombre;
     // End of variables declaration//GEN-END:variables
 }

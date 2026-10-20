@@ -31,10 +31,13 @@ public class Cliente {
 
     public Cliente(VentanaLogin refPantalla) {
         this.refPantalla = refPantalla;
-        this.conectarCliente();
+    }
+
+    public String getIP() {
+        return IP;
     }
     
-    private void conectarCliente(){
+    public void conectarCliente(){
         try {
             socket = new Socket(IP, PORT);
             escritorDeObjetos = new ObjectOutputStream(socket.getOutputStream());
@@ -42,7 +45,7 @@ public class Cliente {
             threadCliente = new ThreadCliente(this, socket);
             threadCliente.start();
             
-            nombre = JOptionPane.showInputDialog(null, "Digite su nick");
+            nombre = refPantalla.nombre;
             //NOMBRE   Diego
             Mensaje msg = new Mensaje("NOMBRE", 1);
             msg.parametros[0] = nombre;
