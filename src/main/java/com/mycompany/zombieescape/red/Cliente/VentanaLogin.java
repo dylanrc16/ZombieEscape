@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.net.Socket;
 
 /**
- * Ventana inicial: el jugador escribe su nombre, la IP del servidor y elige su rol.
+ * Ventana inicial: el jugador escribe su nombre y elige su rol.
  *
  * @author dylnr
  */

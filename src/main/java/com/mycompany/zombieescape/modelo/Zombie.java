@@ -8,6 +8,7 @@ package com.mycompany.zombieescape.modelo;
  *
  * @author dylnr
  */
-public class Zombie extends Personaje {
+public class Zombie extends Thread {
+    private int vida;
     
 }

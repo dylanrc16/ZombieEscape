@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 /**
  *
- * @author diego
+ * @author Duvalier Quiros
  */
 public class ChatServer {
     private static final int PORT = 8084;

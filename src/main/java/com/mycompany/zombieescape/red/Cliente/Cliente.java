@@ -21,7 +21,7 @@ public class Cliente {
     private final int PORT = 8084;    
     
     Socket socket;
-    ClienteFrame refPantalla;
+    VentanaLogin refPantalla;
     
     ThreadCliente threadCliente;
     
@@ -29,7 +29,7 @@ public class Cliente {
     
     String nombre;
 
-    public Cliente(ClienteFrame refPantalla) {
+    public Cliente(VentanaLogin refPantalla) {
         this.refPantalla = refPantalla;
         this.conectarCliente();
     }

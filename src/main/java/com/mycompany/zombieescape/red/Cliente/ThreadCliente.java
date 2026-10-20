@@ -43,13 +43,13 @@ public class ThreadCliente extends Thread{
                     //pintar el mensaje recibido en el textarea
                     String emisor = msg.parametros[0];
                     String texto = msg.parametros[1];
-                    cliente.refPantalla.addMessage(emisor+": "+texto);
+                    //cliente.refPantalla.addMessage(emisor+": "+texto);
                 }else if (msg.tipo.equals("MOVE")){
                     //pintar el movimiento ...
                     String emisor = msg.parametros[0];
                     String x = msg.parametros[1];
                     String y = msg.parametros[2];
-                    cliente.refPantalla.addMessage(emisor+" se movió a "+x +","+"y");
+                    //cliente.refPantalla.addMessage(emisor+" se movió a "+x +","+"y");
                 }
                 
             } catch (IOException ex) {

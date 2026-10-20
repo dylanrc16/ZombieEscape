@@ -8,8 +8,14 @@ package com.mycompany.zombieescape.modelo;
  *
  * @author dylnr
  */
-public class Jugador extends Personaje {
-    private int fila;
-    private int columna;
+public class Jugador {
+    
+    private int vida;
+    private String nombre;
+    
+    
+    //Posicion
+    private Posicion posicion; 
+    
     
 }

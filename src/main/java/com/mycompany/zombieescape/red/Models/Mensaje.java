@@ -8,7 +8,7 @@ import java.io.Serializable;
 
 /**
   MENSAJE       0: Nombre emisor  1: hola mundo
-  PRIVADO       0: hola       1: Diego
+  PRIVADO       0: hola       1: Dylan
   DISPARO       0: x          1: x       2: tipo_munición
   NOMBRE        0: Diego
  */
