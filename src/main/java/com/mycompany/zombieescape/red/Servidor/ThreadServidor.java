@@ -42,9 +42,14 @@ public class ThreadServidor extends Thread {
                 //chatServer.refFrame.addMessage("Recibido: " + msg);
                 //procesar el mensaje recibido en el server desde el cliente
                 if (msg.tipo.equals("NOMBRE")){
+                    if (msg.parametros[0].length() > 0){
                     //escribimos en el servidor que se conectó tal persona
-                    chatServer.refFrame.addMessage("Conectamos a: " + msg.parametros[0]);
-                    this.nombre = msg.parametros[0];
+                        chatServer.refFrame.addMessage("Conectamos a: " + msg.parametros[0]);
+                        this.nombre = msg.parametros[0];}
+                    else{
+                        chatServer.refFrame.addMessage("Conectamos a nadie" + msg.parametros[0]);
+                        
+                    }
                 }else if (msg.tipo.equals("MENSAJE")){
                     //le reenviamos el mensaje a todos los conectado
                     chatServer.broadcast(msg);
