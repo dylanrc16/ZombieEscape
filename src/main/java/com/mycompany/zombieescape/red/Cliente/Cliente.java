@@ -27,7 +27,8 @@ public class Cliente {
     
     public ObjectOutputStream escritorDeObjetos;
     
-    String nombre = "Dylan";
+    String nombre;
+    String rol;
 
     public Cliente(VentanaLogin refPantalla) {
         this.refPantalla = refPantalla;
@@ -46,9 +47,11 @@ public class Cliente {
             threadCliente.start();
             
             nombre = refPantalla.nombre;
+            rol = refPantalla.rol;
             //NOMBRE   Diego
-            Mensaje msg = new Mensaje("NOMBRE", 1);
+            Mensaje msg = new Mensaje("NOMBRE", 2);
             msg.parametros[0] = nombre;
+            msg.parametros[1] = rol;
             escritorDeObjetos.writeObject(msg);                 
         } catch (IOException ex) {
             System.getLogger(Cliente.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);

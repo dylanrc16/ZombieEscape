@@ -9,5 +9,12 @@ package com.mycompany.zombieescape.modelo;
  * @author dylnr
  */
 public class Sniper extends Jugador {
+    private static final int RADIOVISION = 5;
+    private int countBalas;
+
+    public Sniper(String nombre) {
+        super(nombre);
+    }
+    
     
 }

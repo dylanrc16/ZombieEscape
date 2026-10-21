@@ -21,6 +21,7 @@ public class VentanaLogin extends javax.swing.JFrame {
     
     private Cliente cliente;
     public String nombre;
+    public String rol;
     
     public VentanaLogin() {
         initComponents();
@@ -238,7 +239,7 @@ public class VentanaLogin extends javax.swing.JFrame {
        
 
         lblError.setText(" ");
-        String rol = rbSniper.isSelected() ? "SNIPER" : "SUPERVIVIENTE";
+        rol = rbSniper.isSelected() ? "SNIPER" : "SUPERVIVIENTE";
         iniciarJuego(nombre, rol);
         
         

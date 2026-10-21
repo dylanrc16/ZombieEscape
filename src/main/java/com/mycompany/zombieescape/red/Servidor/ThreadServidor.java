@@ -4,6 +4,10 @@
  */
 package com.mycompany.zombieescape.red.Servidor;
 
+
+import com.mycompany.zombieescape.modelo.Jugador;
+import com.mycompany.zombieescape.modelo.Sniper;
+import com.mycompany.zombieescape.modelo.Superviviente;
 import com.mycompany.zombieescape.red.Models.Mensaje;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -21,6 +25,8 @@ public class ThreadServidor extends Thread {
     public ObjectInputStream lectorDeObjetos;
     public ObjectOutputStream escritorDeObjetos;
     private String nombre;
+    private String rol;
+    Jugador jugador;
     
     public ThreadServidor(ChatServer chatServer, Socket socket) {
         try {
@@ -45,10 +51,16 @@ public class ThreadServidor extends Thread {
                     if (msg.parametros[0].length() > 0){
                     //escribimos en el servidor que se conectó tal persona
                         chatServer.refFrame.addMessage("Conectamos a: " + msg.parametros[0]);
-                        this.nombre = msg.parametros[0];}
+                        this.nombre = msg.parametros[0];
+                        this.rol = msg.parametros[1];}
                     else{
-                        chatServer.refFrame.addMessage("Conectamos a nadie" + msg.parametros[0]);
-                        
+                        chatServer.refFrame.addMessage("Conectamos a nadie" + msg.parametros[0]);   
+                    }
+                    if (rol.equals("SNIPER")){
+                        jugador = new Sniper(nombre);
+                    }
+                    else{
+                        jugador = new Superviviente(nombre);
                     }
                 }else if (msg.tipo.equals("MENSAJE")){
                     //le reenviamos el mensaje a todos los conectado

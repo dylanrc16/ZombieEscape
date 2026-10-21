@@ -8,15 +8,16 @@ package com.mycompany.zombieescape.modelo;
  *
  * @author dylnr
  */
-public class Jugador {
-    
-    
-    private int vida;
-    private String nombre;
-    
-    
+public abstract class Jugador {
+    protected int vida;
+    protected String nombre;
     //Posicion
-    private Posicion posicion; 
+    protected Posicion posicion; 
+
+    public Jugador(String nombre) { 
+        this.nombre = nombre;
+
+    }
     
     
 }

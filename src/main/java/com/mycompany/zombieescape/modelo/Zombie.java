@@ -10,5 +10,14 @@ package com.mycompany.zombieescape.modelo;
  */
 public class Zombie extends Thread {
     private int vida;
+    private int daño;
+
+    
+    
+    @Override
+    public void run() {
+      
+    }
+    
     
 }
