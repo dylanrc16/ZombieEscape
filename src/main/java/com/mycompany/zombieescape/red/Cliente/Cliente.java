@@ -27,7 +27,7 @@ public class Cliente {
     
     public ObjectOutputStream escritorDeObjetos;
     
-    String nombre;
+    String nombre = "Dylan";
 
     public Cliente(VentanaLogin refPantalla) {
         this.refPantalla = refPantalla;
