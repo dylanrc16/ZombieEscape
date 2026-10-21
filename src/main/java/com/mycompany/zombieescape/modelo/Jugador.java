@@ -10,6 +10,7 @@ package com.mycompany.zombieescape.modelo;
  */
 public class Jugador {
     
+    
     private int vida;
     private String nombre;
     

@@ -7,10 +7,8 @@ package com.mycompany.zombieescape.red.Models;
 import java.io.Serializable;
 
 /**
-  MENSAJE       0: Nombre emisor  1: hola mundo
-  PRIVADO       0: hola       1: Dylan
-  DISPARO       0: x          1: x       2: tipo_munición
-  NOMBRE        0: Diego
+  NOMBRE        0: "nombre"  1: rol  
+  
  */
 
 public class Mensaje implements Serializable {
