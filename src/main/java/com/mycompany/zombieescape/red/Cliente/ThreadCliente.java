@@ -53,7 +53,7 @@ public class ThreadCliente extends Thread{
                 }
                 
             } catch (IOException ex) {
-                System.getLogger(ThreadServidor.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+                isRunning = false;
             } catch (ClassNotFoundException ex) {
                 System.getLogger(ThreadServidor.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
             }
