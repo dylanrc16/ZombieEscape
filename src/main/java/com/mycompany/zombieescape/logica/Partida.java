@@ -31,6 +31,7 @@ public class Partida {
     private static final int PUNTOS_MENOS   = 20;   // cada llegada siguiente recibe 20 menos...
     private static final int PUNTOS_MINIMO  = 20;   // ...pero nunca menos de 20
     private static final int PUNTOS_ZOMBIE  = 25;   // el sniper gana puntos por zombie eliminado
+    private static final int PUNTOS_RESCATE = 30;   // por revivir a un compañero con su tarjeta
 
     // Disparo: probabilidad de fallar entre 10 % y 20 %
     private static final int FALLO_MIN = 10;
@@ -162,6 +163,10 @@ public class Partida {
         s.pedirMovimiento(d);
         s.mover(mapa);
 
+        if (!s.isEscapo()) {
+            revisarRescates(s);
+        }
+
         if (!yaHabiaEscapado && s.isEscapo()) {
             int puntos = Math.max(PUNTOS_MINIMO, PUNTOS_PRIMERO - PUNTOS_MENOS * llegadas);
             s.sumarPuntos(puntos);
@@ -216,12 +221,36 @@ public class Partida {
     public synchronized void moverZombie(Zombie z) {
         if (!estado.equals(JUGANDO) || !z.isVivo() || !zombies.contains(z)) return;
         z.mover(mapa);
+        revisarTarjetas();
         revisarDetecciones();
         revisarFinNivel();
         notificar();
     }
 
     // ================== Reglas ==================
+
+    // Si el rescatador pisó la tarjeta de un compañero caído, lo revive
+    private void revisarRescates(Superviviente rescatador) {
+        revisarTarjetas();
+        for (Jugador j : jugadores) {
+            if (j != rescatador && j.puedeMoverse()) {
+                Superviviente caido = (Superviviente) j;
+                if (caido.isTarjetaActiva() && caido.getPosicion().esIgual(rescatador.getPosicion())) {
+                    caido.revivir();
+                    rescatador.sumarPuntos(PUNTOS_RESCATE);
+                }
+            }
+        }
+    }
+
+    // Quita las tarjetas de respawn que ya vencieron
+    private void revisarTarjetas() {
+        for (Jugador j : jugadores) {
+            if (j.puedeMoverse()) {
+                ((Superviviente) j).revisarVencimientoTarjeta();
+            }
+        }
+    }
 
     private void revisarDetecciones() {
         for (Zombie z : zombies) {

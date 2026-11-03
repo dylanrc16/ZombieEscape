@@ -63,7 +63,7 @@ public class Zombie implements IMovible, Serializable {
 
     // Mira en línea recta hacia donde camina, hasta el alcance del mapa
     public boolean detecta(Superviviente s, Mapa mapa) {
-        if (!vivo || !s.isVivo() || s.isEscondido() || s.isEscapo()) return false;
+        if (!vivo || !s.isVivo() || s.isEscondido() || s.isEscapo() || s.isProtegido()) return false;
         if (s.getPosicion().esIgual(posicion)) return true;      // lo alcanzó
 
         Posicion mirada = posicion;

@@ -21,6 +21,7 @@ public abstract class Jugador implements Serializable {
     public void setPosicion(Posicion posicion) { this.posicion = posicion; }
     public void sumarPuntos(int cantidad) { puntos += cantidad; }
     public void morir() { vivo = false; }
+    public void revivir() { vivo = true; }
 
     // Cada hijo dice qué imagen lo representa (polimorfismo)
     public abstract String getImagen();

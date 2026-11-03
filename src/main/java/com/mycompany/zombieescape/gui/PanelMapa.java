@@ -49,6 +49,7 @@ public class PanelMapa extends JPanel {
 
     // Devuelve la imagen Img/<nombre>.png, cargándola solo la primera vez
     private Image getImagen(String nombre) {
+        if (nombre == null) return null;          // por ejemplo, una tarjeta de respawn vencida
         if (!imagenes.containsKey(nombre)) {
             File archivo = new File(CARPETA_IMG, nombre + ".png");
             Image img = null;
