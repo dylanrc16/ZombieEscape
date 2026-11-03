@@ -227,7 +227,7 @@ public class VentanaLogin extends javax.swing.JFrame {
 
         nombre = txtNombre.getText().trim();
         
-        cliente.conectarCliente();
+        
 
         if (nombre.isEmpty()) {
             lblError.setText("Escriba un nombre.");
@@ -241,6 +241,8 @@ public class VentanaLogin extends javax.swing.JFrame {
 
         lblError.setText(" ");
         rol = rbSniper.isSelected() ? "SNIPER" : "SUPERVIVIENTE";
+        cliente.conectarCliente();
+        btnEntrar.setEnabled(false);
         iniciarJuego(nombre, rol);
         
         

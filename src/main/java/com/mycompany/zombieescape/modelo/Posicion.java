@@ -4,11 +4,13 @@
  */
 package com.mycompany.zombieescape.modelo;
 
+import java.io.Serializable;
+
 /**
  *
  * @author dylnr
  */
-public class Posicion {
+public class Posicion implements Serializable {
     private final int fila;
     private final int columna;
 
@@ -38,5 +40,9 @@ public class Posicion {
     @Override
     public String toString() {
         return "(" + fila + ", " + columna + ")";
+    }
+        // Pasos en línea recta (sin diagonales) entre dos posiciones
+    public int distancia(Posicion otra) {
+        return Math.abs(fila - otra.fila) + Math.abs(columna - otra.columna);
     }
 }

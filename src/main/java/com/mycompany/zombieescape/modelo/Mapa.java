@@ -4,13 +4,14 @@
  */
 package com.mycompany.zombieescape.modelo;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
  *
  * @author dylnr
  */
-public class Mapa {
+public class Mapa implements Serializable {
     private String nombre;
     private int deteccion;
     private int cantidadZombies;
@@ -54,12 +55,16 @@ public class Mapa {
 
     // Devuelve todas las posiciones {fila, columna} de un tipo de celda
     public ArrayList<Posicion> buscarCeldas(char tipo) {
-    ArrayList<Posicion> lista = new ArrayList();
+    ArrayList<Posicion> lista = new ArrayList<>();
     for (int f = 0; f < getFilas(); f++)
         for (int c = 0; c < getColumnas(); c++)
             if (mapa[f][c] == tipo)
                 lista.add(new Posicion(f, c));
     return lista;
 }
-}
 
+    // Versiones que reciben una Posicion (sobrecarga)
+    public boolean esCaminable(Posicion p) { return esCaminable(p.getFila(), p.getColumna()); }
+    public boolean esEscondite(Posicion p) { return esEscondite(p.getFila(), p.getColumna()); }
+    public boolean esSalida(Posicion p)    { return esSalida(p.getFila(), p.getColumna()); }
+}

@@ -9,48 +9,60 @@ package com.mycompany.zombieescape.modelo;
  * @author dylnr
  */
 
-//Clase para donde tiene que ir cada personaje
-public class Direccion {
-    public static final Direccion ARRIBA    = new Direccion(0, -1);
-    public static final Direccion ABAJO     = new Direccion(0, 1);
-    public static final Direccion IZQUIERDA = new Direccion(-1, 0);
-    public static final Direccion DERECHA   = new Direccion(1, 0);
-    
-    private int dx; // cambio en columna
-    private int dy; // cambio en fila
 
-    private Direccion(int dx, int dy) {
+
+// Hacia dónde mira o se mueve un personaje
+public enum Direccion {
+    ARRIBA(0, -1),
+    ABAJO(0, 1),
+    IZQUIERDA(-1, 0),
+    DERECHA(1, 0);
+
+    private final int dx; // cambio en columna
+    private final int dy; // cambio en fila
+
+    Direccion(int dx, int dy) {
         this.dx = dx;
         this.dy = dy;
     }
-    
-    public static Direccion textoAMovimiento(String movimiento){
-        movimiento.toUpperCase();
-        switch(movimiento){
-            case "ARRIBA" -> {
-                return ARRIBA;
-            }
-            case "ABAJO" -> {
-                return ABAJO;
-            }
-            case "DERECHA" -> {
-                return DERECHA;
-            }
-            case "IZQUIERDA" -> {
-                return IZQUIERDA;
-            }
-}
-        return null;
-              
-                    
-    }  
-                   
-    public int getDx() {
-        return dx;
+
+    public int getDx() { return dx; }
+    public int getDy() { return dy; }
+
+    public Direccion girarDerecha() {
+        switch (this) {
+            case ARRIBA:    return DERECHA;
+            case DERECHA:   return ABAJO;
+            case ABAJO:     return IZQUIERDA;
+            default:        return ARRIBA;      // IZQUIERDA
+        }
     }
 
-    public int getDy() {
-        return dy;
+    public Direccion girarIzquierda() {
+        switch (this) {
+            case ARRIBA:    return IZQUIERDA;
+            case IZQUIERDA: return ABAJO;
+            case ABAJO:     return DERECHA;
+            default:        return ARRIBA;      // DERECHA
+        }
     }
-    
+
+    public Direccion opuesta() {
+        return girarDerecha().girarDerecha();
+    }
+
+    // Convierte el texto de un mensaje ("arriba", "ARRIBA") en una dirección
+    public static Direccion textoAMovimiento(String movimiento) {
+        if (movimiento == null) return null;
+        try {
+            return valueOf(movimiento.toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            return null;                        // texto que no es una dirección
+        }
+    }
+
+    // "arriba", "abajo"... para armar el nombre de la imagen: "zombie_" + getNombre()
+    public String getNombre() {
+        return name().toLowerCase();
+    }
 }
