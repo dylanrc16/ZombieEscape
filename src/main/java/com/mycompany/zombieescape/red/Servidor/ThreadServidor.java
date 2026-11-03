@@ -54,7 +54,7 @@ public class ThreadServidor extends Thread {
                         this.nombre = msg.parametros[0];
                         this.rol = msg.parametros[1];}
                     else{
-                        chatServer.refFrame.addMessage("Conectamos a nadie" + msg.parametros[0]);   
+                        chatServer.refFrame.addMessage("Conexion rechazada, cliente sin nombre");   
                     }
                     if (rol.equals("SNIPER")){
                         jugador = new Sniper(nombre);

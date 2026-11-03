@@ -23,7 +23,28 @@ public class Direccion {
         this.dx = dx;
         this.dy = dy;
     }
-
+    
+    public static Direccion textoAMovimiento(String movimiento){
+        movimiento.toUpperCase();
+        switch(movimiento){
+            case "ARRIBA" -> {
+                return ARRIBA;
+            }
+            case "ABAJO" -> {
+                return ABAJO;
+            }
+            case "DERECHA" -> {
+                return DERECHA;
+            }
+            case "IZQUIERDA" -> {
+                return IZQUIERDA;
+            }
+}
+        return null;
+              
+                    
+    }  
+                   
     public int getDx() {
         return dx;
     }
