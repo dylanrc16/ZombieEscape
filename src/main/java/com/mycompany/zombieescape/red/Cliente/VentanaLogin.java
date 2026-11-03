@@ -162,6 +162,7 @@ public class VentanaLogin extends javax.swing.JFrame {
         rbSniper.setForeground(new java.awt.Color(230, 230, 230));
         rbSniper.setText("Sniper");
         rbSniper.setFocusPainted(false);
+        rbSniper.addActionListener(this::rbSniperActionPerformed);
         panelRoles.add(rbSniper);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -262,6 +263,10 @@ public class VentanaLogin extends javax.swing.JFrame {
     private void btnEntrarMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnEntrarMouseExited
         btnEntrar.setBackground(VERDE);
     }//GEN-LAST:event_btnEntrarMouseExited
+
+    private void rbSniperActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rbSniperActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_rbSniperActionPerformed
 
     // Aquí se conecta con la parte de red
     private void iniciarJuego(String nombre, String rol) {
