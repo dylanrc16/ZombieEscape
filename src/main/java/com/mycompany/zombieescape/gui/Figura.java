@@ -22,9 +22,19 @@ public class Figura {
         this.oculta = oculta;
     }
 
-    public String getImagen() { return imagen; }
-    public int getFila() { return fila; }
-    public int getColumna() { return columna; }
-    public String getEtiqueta() { return etiqueta; }
-    public boolean isOculta() { return oculta; }
+    public String getImagen() {
+        return imagen; 
+    }
+    public int getFila() {
+        return fila; 
+    }
+    public int getColumna() {
+        return columna;
+    }
+    public String getEtiqueta() {
+        return etiqueta; 
+    }
+    public boolean isOculta() {
+        return oculta; 
+    }
 }

@@ -26,8 +26,12 @@ public enum Direccion {
         this.dy = dy;
     }
 
-    public int getDx() { return dx; }
-    public int getDy() { return dy; }
+    public int getDx() {
+        return dx; 
+    }
+    public int getDy() {
+        return dy; 
+    }
 
     public Direccion girarDerecha() {
         switch (this) {

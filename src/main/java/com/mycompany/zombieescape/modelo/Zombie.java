@@ -18,12 +18,22 @@ public class Zombie implements IMovible, Serializable {
         this.velocidad = velocidad;
     }
 
-    public Posicion getPosicion() { return posicion; }
+    public Posicion getPosicion() {
+        return posicion; 
+    }
     @Override
-    public Direccion getDireccion() { return direccion; }
-    public boolean isVivo() { return vivo; }
-    public int getVelocidad() { return velocidad; }
-    public void morir() { vivo = false; }
+    public Direccion getDireccion() {
+        return direccion; 
+    }
+    public boolean isVivo() {
+        return vivo; 
+    }
+    public int getVelocidad() {
+        return velocidad; 
+    }
+    public void morir() {
+        vivo = false; 
+    }
 
     @Override
     public void mover(Mapa mapa) {

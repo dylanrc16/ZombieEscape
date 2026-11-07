@@ -24,11 +24,21 @@ public class Mapa implements Serializable {
         this.mapa = mapa;
     }
 
-    public String getNombre() { return nombre; }
-    public int getDeteccion() { return deteccion; }
-    public int getCantidadZombies() { return cantidadZombies; }
-    public int getFilas() { return mapa.length; }
-    public int getColumnas() { return mapa[0].length; }
+    public String getNombre() {
+        return nombre; 
+    }
+    public int getDeteccion() {
+        return deteccion; 
+    }
+    public int getCantidadZombies() {
+        return cantidadZombies; 
+    }
+    public int getFilas() {
+        return mapa.length; 
+    }
+    public int getColumnas() {
+        return mapa[0].length; 
+    }
 
     public boolean estaDentro(int f, int c) {
         return f >= 0 && f < getFilas() && c >= 0 && c < getColumnas();
@@ -64,7 +74,13 @@ public class Mapa implements Serializable {
 }
 
     // Versiones que reciben una Posicion (sobrecarga)
-    public boolean esCaminable(Posicion p) { return esCaminable(p.getFila(), p.getColumna()); }
-    public boolean esEscondite(Posicion p) { return esEscondite(p.getFila(), p.getColumna()); }
-    public boolean esSalida(Posicion p)    { return esSalida(p.getFila(), p.getColumna()); }
+    public boolean esCaminable(Posicion p) {
+        return esCaminable(p.getFila(), p.getColumna()); 
+    }
+    public boolean esEscondite(Posicion p) {
+        return esEscondite(p.getFila(), p.getColumna()); 
+    }
+    public boolean esSalida(Posicion p)    {
+        return esSalida(p.getFila(), p.getColumna()); 
+    }
 }

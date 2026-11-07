@@ -18,11 +18,21 @@ public class Superviviente extends Jugador implements IMovible {
     }
 
     @Override
-    public Direccion getDireccion() { return direccion; }
-    public boolean isEscondido() { return escondido; }
-    public boolean isEscapo() { return escapo; }
-    public void setSkin(String skin) { this.skin = skin; }
-    public boolean isTarjetaActiva() { return tarjetaActiva; }
+    public Direccion getDireccion() {
+        return direccion; 
+    }
+    public boolean isEscondido() {
+        return escondido; 
+    }
+    public boolean isEscapo() {
+        return escapo; 
+    }
+    public void setSkin(String skin) {
+        this.skin = skin; 
+    }
+    public boolean isTarjetaActiva() {
+        return tarjetaActiva; 
+    }
 
     // Recién revivido: los zombies no lo ven durante unos segundos
     public boolean isProtegido() {
@@ -108,5 +118,7 @@ public class Superviviente extends Jugador implements IMovible {
     }
 
     @Override
-    public boolean puedeMoverse() { return true; }
+    public boolean puedeMoverse() {
+        return true;
+    }
 }

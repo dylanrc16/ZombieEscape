@@ -11,14 +11,20 @@ public class Sniper extends Jugador {
         super(nombre);
     }
 
-    public int getBalas() { return countBalas; }
-    public boolean tieneBalas() { return countBalas > 0; }
+    public int getBalas() {
+        return countBalas; 
+    }
+    public boolean tieneBalas() {
+        return countBalas > 0; 
+    }
 
     public void gastarBala() {
         if (countBalas > 0) countBalas--;
     }
 
-    public void recargar() { countBalas = BALAS_POR_ESCENARIO; }
+    public void recargar() {
+        countBalas = BALAS_POR_ESCENARIO; 
+    }
 
     // ¿Esa celda está dentro de su cuadro de visión?
     public boolean puedeVer(Posicion p) {
@@ -27,8 +33,12 @@ public class Sniper extends Jugador {
     }
 
     @Override
-    public String getImagen() { return "sniper"; }
+    public String getImagen() {
+        return "sniper"; 
+    }
 
     @Override
-    public boolean puedeMoverse() { return false; }
+    public boolean puedeMoverse() {
+        return false; 
+    }
 }

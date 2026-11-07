@@ -13,15 +13,31 @@ public abstract class Jugador implements Serializable {
         this.nombre = nombre;
     }
 
-    public String getNombre() { return nombre; }
-    public Posicion getPosicion() { return posicion; }
-    public int getPuntos() { return puntos; }
-    public boolean isVivo() { return vivo; }
+    public String getNombre() {
+        return nombre; 
+    }
+    public Posicion getPosicion() {
+        return posicion; 
+    }
+    public int getPuntos() {
+        return puntos; 
+    }
+    public boolean isVivo() {
+        return vivo; 
+    }
 
-    public void setPosicion(Posicion posicion) { this.posicion = posicion; }
-    public void sumarPuntos(int cantidad) { puntos += cantidad; }
-    public void morir() { vivo = false; }
-    public void revivir() { vivo = true; }
+    public void setPosicion(Posicion posicion) {
+        this.posicion = posicion; 
+    }
+    public void sumarPuntos(int cantidad) {
+        puntos += cantidad; 
+    }
+    public void morir() {
+        vivo = false; 
+    }
+    public void revivir() {
+        vivo = true; 
+    }
 
     // Cada hijo dice qué imagen lo representa (polimorfismo)
     public abstract String getImagen();
