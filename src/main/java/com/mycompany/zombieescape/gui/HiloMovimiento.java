@@ -1,7 +1,7 @@
 package com.mycompany.zombieescape.gui;
 
 import com.mycompany.zombieescape.modelo.Direccion;
-import com.mycompany.zombieescape.modelo.Superviviente;
+import com.mycompany.zombieescape.modelo.Jugador;
 import com.mycompany.zombieescape.red.Cliente.Cliente;
 import java.util.ArrayList;
 
@@ -65,7 +65,7 @@ public class HiloMovimiento extends Thread {
                 cliente.enviarMovimiento(d);
             }
             try {
-                Thread.sleep(Superviviente.ESPERA_MOVIMIENTO);   // mismo ritmo que acepta el servidor
+                Thread.sleep(Jugador.ESPERA_MOVIMIENTO);   // mismo ritmo que acepta el servidor
             } catch (InterruptedException ex) {
                 return;
             }

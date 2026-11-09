@@ -3,13 +3,18 @@ package com.mycompany.zombieescape.gui;
 import com.mycompany.zombieescape.modelo.Direccion;
 import com.mycompany.zombieescape.modelo.Jugador;
 import com.mycompany.zombieescape.modelo.Mapa;
+import com.mycompany.zombieescape.modelo.Posicion;
+import com.mycompany.zombieescape.modelo.Sniper;
 import com.mycompany.zombieescape.modelo.Superviviente;
 import com.mycompany.zombieescape.modelo.Zombie;
 import com.mycompany.zombieescape.red.Cliente.Cliente;
 import com.mycompany.zombieescape.red.Cliente.EscuchaCliente;
 import com.mycompany.zombieescape.red.Models.EstadoJuego;
 import java.awt.event.ActionEvent;
+import java.awt.Cursor;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
@@ -33,6 +38,7 @@ public class VentanaJuego extends javax.swing.JFrame implements EscuchaCliente {
     private HiloMovimiento hiloMovimiento;
     private boolean espacioPresionado;    // para que dejar presionado el espacio no alterne sin parar
     private int nivelMostrado = -1;       // para ajustar la ventana solo cuando cambia el mapa
+    private boolean apuntando;            // sniper: true = mira de 3x3, false = ve todo el mapa
 
     public VentanaJuego(Cliente cliente, String nombre, String rol) {
         initComponents();
@@ -50,8 +56,13 @@ public class VentanaJuego extends javax.swing.JFrame implements EscuchaCliente {
         // Me suscribo ANTES de conectar, para no perder los primeros mensajes
         cliente.setEscucha(this);
 
+        lblBalas.setVisible(esSniper());          // solo el sniper tiene balas
+        lblCoordenadas.setVisible(esSniper());    // y necesita saber dónde está apuntando
         if (esSniper()) {
-            lblControles.setText("Eres el sniper: no te mueves");   // el disparo llega en el paso 4b
+            // El sniper se maneja solo con el mouse
+            lblControles.setText("<html>Clic derecho: apuntar / dejar de apuntar<br>Clic izquierdo: disparar ("
+                    + Sniper.BALAS_POR_ESCENARIO + " balas por nivel)</html>");
+            configurarMouseSniper();
         } else {
             hiloMovimiento = new HiloMovimiento(cliente);
             hiloMovimiento.start();
@@ -84,6 +95,18 @@ public class VentanaJuego extends javax.swing.JFrame implements EscuchaCliente {
         enlazarFlecha(teclas, acciones, KeyEvent.VK_LEFT, Direccion.IZQUIERDA);
         enlazarFlecha(teclas, acciones, KeyEvent.VK_RIGHT, Direccion.DERECHA);
 
+        configurarEspacio(teclas, acciones);
+
+        // El JScrollPane del mapa usa las flechas para desplazarse; se las quitamos
+        InputMap delScroll = scrollMapa.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        delScroll.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "none");
+        delScroll.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), "none");
+        delScroll.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), "none");
+        delScroll.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), "none");
+    }
+
+    // Espacio: entrar o salir del escondite (una vez por cada vez que se presiona)
+    private void configurarEspacio(InputMap teclas, ActionMap acciones) {
         teclas.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0, false), "esconder");
         teclas.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0, true), "soltarEspacio");
         acciones.put("esconder", new AbstractAction() {
@@ -100,13 +123,6 @@ public class VentanaJuego extends javax.swing.JFrame implements EscuchaCliente {
                 espacioPresionado = false;
             }
         });
-
-        // El JScrollPane del mapa usa las flechas para desplazarse; se las quitamos
-        InputMap delScroll = scrollMapa.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        delScroll.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "none");
-        delScroll.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), "none");
-        delScroll.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), "none");
-        delScroll.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), "none");
     }
 
     // Presionar avisa al hilo qué flecha está abajo; soltar le avisa que ya no
@@ -132,6 +148,58 @@ public class VentanaJuego extends javax.swing.JFrame implements EscuchaCliente {
     // Si está escribiendo en el chat, las teclas son para el texto, no para el jugador
     private boolean escribiendo() {
         return getFocusOwner() instanceof JTextComponent && ((JTextComponent) getFocusOwner()).isEditable();
+    }
+
+    // ================== Mouse del sniper ==================
+
+    // Clic derecho: entra en modo apuntar (mira 3x3 donde hizo clic) o sale de él.
+    // Clic izquierdo: dispara a la cruz roja, solo mientras está apuntando.
+    private void configurarMouseSniper() {
+        panelMapa.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+        MouseAdapter mouse = new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                Posicion celda = panelMapa.celdaEn(e.getX(), e.getY());
+                if (celda == null) return;
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    if (apuntando) {
+                        dejarDeApuntar();
+                    } else {
+                        apuntando = true;
+                        cliente.enviarApuntado(celda.getFila(), celda.getColumna());
+                        panelMapa.setVision(celda, Sniper.RADIOVISION);   // se ve ya; la foto del servidor lo confirma
+                    }
+                } else if (SwingUtilities.isLeftMouseButton(e)) {
+                    if (!apuntando) {
+                        lblAviso.setText("Primero apunte con clic derecho");
+                        return;
+                    }
+                    // El servidor revisa si está dentro de la mira, si tiene balas y el margen de error
+                    cliente.enviarDisparo(celda.getFila(), celda.getColumna());
+                }
+            }
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                Posicion celda = panelMapa.celdaEn(e.getX(), e.getY());
+                panelMapa.setApuntada(celda);   // la cruz roja (solo se ve dentro de la mira)
+                lblCoordenadas.setText(celda == null ? "Mouse: -"
+                        : "Mouse: fila " + celda.getFila() + ", columna " + celda.getColumna());
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                panelMapa.setApuntada(null);
+                lblCoordenadas.setText("Mouse: -");
+            }
+        };
+        panelMapa.addMouseListener(mouse);          // clics
+        panelMapa.addMouseMotionListener(mouse);    // movimiento (para la mira)
+    }
+
+    private void dejarDeApuntar() {
+        apuntando = false;
+        panelMapa.setVision(null, 0);   // vuelve a ver todo el mapa
     }
 
     // ================== Lo que llega del servidor ==================
@@ -160,16 +228,32 @@ public class VentanaJuego extends javax.swing.JFrame implements EscuchaCliente {
         // Nivel nuevo: el mapa cambia de tamaño y la ventana se ajusta
         if (estado.getNivel() != nivelMostrado) {
             nivelMostrado = estado.getNivel();
+            dejarDeApuntar();               // en un nivel nuevo empieza viendo todo
             panelMapa.setMapa(mapa);
             pack();
             setLocationRelativeTo(null);
         }
         panelMapa.setFiguras(crearFiguras(estado));
+        if (esSniper()) {
+            actualizarSniper(estado);
+        }
 
         lblNivel.setText("Nivel " + estado.getNivel() + "/" + estado.getTotalNiveles() + ": " + mapa.getNombre());
         lblTiempo.setText("Tiempo: " + formatoTiempo(estado.getSegundos()));
         lblEstado.setText(textoEstado(estado.getEstado()));
         txaJugadores.setText(textoJugadores(estado));
+    }
+
+    // Mientras apunta, la mira se centra donde el servidor la tiene; las balas salen de la foto
+    private void actualizarSniper(EstadoJuego estado) {
+        Jugador yo = estado.buscarJugador(miNombre);
+        if (yo == null || yo.getPosicion() == null || yo.puedeMoverse()) return;
+        Sniper sniper = (Sniper) yo;
+        if (apuntando) {
+            panelMapa.setVision(sniper.getPosicion(), Sniper.RADIOVISION);
+        }
+        lblBalas.setText("Balas: " + sniper.getBalas() + "/" + Sniper.BALAS_POR_ESCENARIO
+                + (apuntando ? "  (apuntando)" : ""));
     }
 
     // Convierte la foto del servidor en cosas que PanelMapa sabe dibujar
@@ -182,6 +266,7 @@ public class VentanaJuego extends javax.swing.JFrame implements EscuchaCliente {
             }
         }
         for (Jugador j : estado.getJugadores()) {
+            if (!j.puedeMoverse()) continue;   // el sniper no está dentro de la ciudad: no se dibuja
             String imagen = j.getImagen();
             if (imagen == null || j.getPosicion() == null) continue;   // tarjeta vencida o sin colocar
             boolean escondido = false;
@@ -253,6 +338,8 @@ public class VentanaJuego extends javax.swing.JFrame implements EscuchaCliente {
         lblNivel = new javax.swing.JLabel();
         lblTiempo = new javax.swing.JLabel();
         lblEstado = new javax.swing.JLabel();
+        lblBalas = new javax.swing.JLabel();
+        lblCoordenadas = new javax.swing.JLabel();
         lblJugadoresTitulo = new javax.swing.JLabel();
         scrollJugadores = new javax.swing.JScrollPane();
         txaJugadores = new javax.swing.JTextArea();
@@ -304,6 +391,18 @@ public class VentanaJuego extends javax.swing.JFrame implements EscuchaCliente {
         lblEstado.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 0, 0, 0));
         panelInfo.add(lblEstado);
 
+        lblBalas.setFont(new java.awt.Font("SansSerif", 1, 14)); // NOI18N
+        lblBalas.setForeground(new java.awt.Color(230, 180, 80));
+        lblBalas.setText("Balas: -");
+        lblBalas.setBorder(javax.swing.BorderFactory.createEmptyBorder(6, 0, 0, 0));
+        panelInfo.add(lblBalas);
+
+        lblCoordenadas.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
+        lblCoordenadas.setForeground(new java.awt.Color(228, 228, 231));
+        lblCoordenadas.setText("Mouse: -");
+        lblCoordenadas.setBorder(javax.swing.BorderFactory.createEmptyBorder(4, 0, 0, 0));
+        panelInfo.add(lblCoordenadas);
+
         lblJugadoresTitulo.setFont(new java.awt.Font("SansSerif", 1, 12)); // NOI18N
         lblJugadoresTitulo.setForeground(new java.awt.Color(150, 150, 160));
         lblJugadoresTitulo.setText("JUGADORES");
@@ -344,6 +443,8 @@ public class VentanaJuego extends javax.swing.JFrame implements EscuchaCliente {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel lblAviso;
+    private javax.swing.JLabel lblBalas;
+    private javax.swing.JLabel lblCoordenadas;
     private javax.swing.JLabel lblControles;
     private javax.swing.JLabel lblEstado;
     private javax.swing.JLabel lblJugador;

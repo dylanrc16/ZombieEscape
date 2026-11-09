@@ -20,6 +20,7 @@ import java.util.ArrayList;
 public class ChatServer implements EscuchaPartida {
     private static final int PORT = 8084;
     public static final int MAX_JUGADORES = 10;
+    public static final int MAX_SNIPERS = 2;      //el enunciado: 1-2 francotiradores
 
     ServerSocket serverSocket;
     ServerFrame refFrame;

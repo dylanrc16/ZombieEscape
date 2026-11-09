@@ -42,13 +42,13 @@ public class Zombie implements IMovible, Serializable {
         // 1. A veces dobla en una esquina o cruce aunque pueda seguir recto
         if (azar.nextInt(100) < PROBABILIDAD_DOBLAR) {
             Direccion lado = azar.nextBoolean() ? direccion.girarDerecha() : direccion.girarIzquierda();
-            if (mapa.esCaminable(posicion.siguiente(lado))) {
+            if (mapa.esCaminableZombie(posicion.siguiente(lado))) {
                 direccion = lado;
             }
         }
 
-        // 2. Si choca con pared u obstáculo, gira hacia un lado libre
-        if (!mapa.esCaminable(posicion.siguiente(direccion))) {
+        // 2. Si choca con pared, obstáculo, escondite o salida, gira hacia un lado libre
+        if (!mapa.esCaminableZombie(posicion.siguiente(direccion))) {
             Direccion primero = direccion.girarDerecha();
             Direccion segundo = direccion.girarIzquierda();
             if (azar.nextBoolean()) {          // para que no siempre gire al mismo lado
@@ -56,11 +56,11 @@ public class Zombie implements IMovible, Serializable {
                 primero = segundo;
                 segundo = aux;
             }
-            if (mapa.esCaminable(posicion.siguiente(primero))) {
+            if (mapa.esCaminableZombie(posicion.siguiente(primero))) {
                 direccion = primero;
-            } else if (mapa.esCaminable(posicion.siguiente(segundo))) {
+            } else if (mapa.esCaminableZombie(posicion.siguiente(segundo))) {
                 direccion = segundo;
-            } else if (mapa.esCaminable(posicion.siguiente(direccion.opuesta()))) {
+            } else if (mapa.esCaminableZombie(posicion.siguiente(direccion.opuesta()))) {
                 direccion = direccion.opuesta();   // callejón sin salida: se devuelve
             } else {
                 return;                            // está encerrado

@@ -83,4 +83,10 @@ public class Mapa implements Serializable {
     public boolean esSalida(Posicion p)    {
         return esSalida(p.getFila(), p.getColumna()); 
     }
+
+    // Los zombies no pisan escondites (son zonas seguras para los humanos)
+    // ni salidas (para que no bloqueen el escape)
+    public boolean esCaminableZombie(Posicion p) {
+        return esCaminable(p) && !esEscondite(p) && !esSalida(p);
+    }
 }

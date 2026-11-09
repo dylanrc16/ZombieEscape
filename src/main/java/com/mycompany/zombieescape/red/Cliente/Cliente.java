@@ -91,6 +91,13 @@ public class Cliente {
         enviar(new Mensaje("HIDE", 0));
     }
 
+    public void enviarApuntado(int fila, int columna){
+        Mensaje msg = new Mensaje("AIM", 2);
+        msg.parametros[0] = String.valueOf(fila);
+        msg.parametros[1] = String.valueOf(columna);
+        enviar(msg);
+    }
+
     public void enviarDisparo(int fila, int columna){
         Mensaje msg = new Mensaje("SHOOT", 2);
         msg.parametros[0] = String.valueOf(fila);

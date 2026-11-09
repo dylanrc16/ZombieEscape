@@ -12,6 +12,7 @@ import java.io.Serializable;
   MENSAJE       0: emisor   1: texto          (el servidor pone el emisor real)
   MOVE          0: dirección ("ARRIBA", "ABAJO", "IZQUIERDA", "DERECHA")
   HIDE          sin parámetros (entrar/salir del escondite)
+  AIM           0: fila     1: columna        (el sniper mueve su mira ahí)
   SHOOT         0: fila     1: columna
 
   Servidor -> Cliente

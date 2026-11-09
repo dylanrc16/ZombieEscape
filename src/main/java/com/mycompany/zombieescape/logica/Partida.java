@@ -105,15 +105,14 @@ public class Partida {
         notificar();
     }
 
-    // Supervivientes en las entradas; snipers en una calle al azar (el centro de lo que ven)
+    // Supervivientes en las entradas; la mira de los snipers empieza en el centro del mapa
     private void colocar(Jugador j, int indice) {
         if (j.puedeMoverse()) {
             ArrayList<Posicion> entradas = mapa.buscarCeldas(TipoCelda.ENTRADA);
             ((Superviviente) j).reiniciar(entradas.get(indice % entradas.size()));
         } else {
-            ArrayList<Posicion> calles = mapa.buscarCeldas(TipoCelda.CAMINO);
             Sniper s = (Sniper) j;
-            s.setPosicion(calles.get(azar.nextInt(calles.size())));
+            s.setPosicion(new Posicion(mapa.getFilas() / 2, mapa.getColumnas() / 2));
             s.recargar();
         }
     }
@@ -157,9 +156,9 @@ public class Partida {
     public synchronized void moverJugador(Jugador j, Direccion d) {
         if (!estado.equals(JUGANDO) || j == null || d == null) return;
         if (!j.isVivo() || !j.puedeMoverse()) return;   // espectadores y snipers no caminan
+        if (!j.listoParaMover()) return;                // muy pronto desde su último paso
 
         Superviviente s = (Superviviente) j;
-        if (!s.listoParaMover()) return;                // muy pronto desde su último paso
         boolean yaHabiaEscapado = s.isEscapo();
         s.pedirMovimiento(d);
         s.mover(mapa);
@@ -181,6 +180,14 @@ public class Partida {
     public synchronized void esconder(Jugador j) {
         if (!estado.equals(JUGANDO) || j == null || !j.puedeMoverse()) return;
         ((Superviviente) j).alternarEscondite(mapa);
+        notificar();
+    }
+
+    // El sniper mueve su mira (clic derecho). Mismo límite de velocidad que caminar.
+    public synchronized void apuntar(Jugador j, int fila, int columna) {
+        if (!estado.equals(JUGANDO) || j == null || j.puedeMoverse()) return;
+        if (!j.listoParaMover()) return;
+        ((Sniper) j).apuntarA(new Posicion(fila, columna), mapa);
         notificar();
     }
 

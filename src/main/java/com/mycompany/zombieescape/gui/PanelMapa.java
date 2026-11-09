@@ -1,8 +1,10 @@
 package com.mycompany.zombieescape.gui;
 
 import com.mycompany.zombieescape.modelo.Mapa;
+import com.mycompany.zombieescape.modelo.Posicion;
 import com.mycompany.zombieescape.modelo.TipoCelda;
 import java.awt.AlphaComposite;
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -28,6 +30,14 @@ public class PanelMapa extends JPanel {
     private Mapa mapa;
     private ArrayList<Figura> figuras = new ArrayList<>();
 
+    // Vista limitada del sniper: si centroVision es null se ve todo el mapa
+    private Posicion centroVision;
+    private int radioVision;
+    private Posicion apuntada;        // celda bajo el mouse del sniper (para dibujar la mira)
+
+    private static final Color NIEBLA = Color.BLACK;   // fuera de la mira no se ve nada
+    private static final Color ROJO_MIRA = new Color(230, 60, 60);
+
     // Imágenes ya cargadas, para no leer el archivo cada vez que se repinta
     private HashMap<String, Image> imagenes = new HashMap<>();
 
@@ -45,6 +55,32 @@ public class PanelMapa extends JPanel {
     public void setFiguras(ArrayList<Figura> figuras) {
         this.figuras = figuras;
         repaint();
+    }
+
+    // El sniper solo ve un cuadro alrededor de centro; null = ver todo
+    public void setVision(Posicion centro, int radio) {
+        this.centroVision = centro;
+        this.radioVision = radio;
+        repaint();
+    }
+
+    public void setApuntada(Posicion celda) {
+        this.apuntada = celda;
+        repaint();
+    }
+
+    // Convierte un punto del mouse (en pixeles) a la celda del mapa. null si cae fuera.
+    // Es la cuenta del dibujo al revés: allá x = columna * TAM, aquí columna = x / TAM.
+    public Posicion celdaEn(int x, int y) {
+        if (mapa == null || x < 0 || y < 0) return null;
+        Posicion p = new Posicion(y / TAM, x / TAM);
+        return mapa.estaDentro(p.getFila(), p.getColumna()) ? p : null;
+    }
+
+    private boolean dentroDeVision(int fila, int columna) {
+        if (centroVision == null) return true;
+        return Math.abs(fila - centroVision.getFila()) <= radioVision
+            && Math.abs(columna - centroVision.getColumna()) <= radioVision;
     }
 
     // Devuelve la imagen Img/<nombre>.png, cargándola solo la primera vez
@@ -98,6 +134,8 @@ public class PanelMapa extends JPanel {
         // 2. Jugadores y zombies encima
         Graphics2D g2 = (Graphics2D) g;
         for (Figura fig : figuras) {
+            // Lo que el sniper no alcanza a ver no se dibuja (si no, vería zombies "en la niebla")
+            if (!dentroDeVision(fig.getFila(), fig.getColumna())) continue;
             int x = fig.getColumna() * TAM;
             int y = fig.getFila() * TAM;
 
@@ -114,6 +152,40 @@ public class PanelMapa extends JPanel {
                 dibujarEtiqueta(g2, fig.getEtiqueta(), x, y);
             }
         }
+
+        // 3. Niebla del sniper y la mira
+        if (centroVision != null) {
+            dibujarNiebla(g2);
+        }
+    }
+
+    private void dibujarNiebla(Graphics2D g2) {
+        g2.setColor(NIEBLA);
+        for (int f = 0; f < mapa.getFilas(); f++) {
+            for (int c = 0; c < mapa.getColumnas(); c++) {
+                if (!dentroDeVision(f, c)) {
+                    g2.fillRect(c * TAM, f * TAM, TAM, TAM);
+                }
+            }
+        }
+        // Borde del área visible
+        int lado = (radioVision * 2 + 1) * TAM;
+        int x = (centroVision.getColumna() - radioVision) * TAM;
+        int y = (centroVision.getFila() - radioVision) * TAM;
+        g2.setStroke(new BasicStroke(2));
+        g2.setColor(new Color(120, 200, 80));
+        g2.drawRect(x, y, lado, lado);
+
+        // Mira sobre la celda apuntada (solo si está dentro de lo que ve)
+        if (apuntada != null && dentroDeVision(apuntada.getFila(), apuntada.getColumna())) {
+            int ax = apuntada.getColumna() * TAM;
+            int ay = apuntada.getFila() * TAM;
+            g2.setColor(ROJO_MIRA);
+            g2.drawRect(ax + 1, ay + 1, TAM - 2, TAM - 2);
+            g2.drawLine(ax + TAM / 2, ay + 4, ax + TAM / 2, ay + TAM - 4);
+            g2.drawLine(ax + 4, ay + TAM / 2, ax + TAM - 4, ay + TAM / 2);
+        }
+        g2.setStroke(new BasicStroke(1));
     }
 
     // Nombre del jugador centrado debajo de su celda, con sombra para que se lea

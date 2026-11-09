@@ -67,6 +67,8 @@ public class ThreadServidor extends Thread {
                     chatServer.partida.moverJugador(jugador, d);
                 }else if (msg.tipo.equals("HIDE")){
                     chatServer.partida.esconder(jugador);
+                }else if (msg.tipo.equals("AIM")){
+                    apuntar(msg);
                 }else if (msg.tipo.equals("SHOOT")){
                     disparar(msg);
                 }
@@ -105,6 +107,12 @@ public class ThreadServidor extends Thread {
             isRunning = false;
             return;
         }
+        if ("SNIPER".equals(msg.parametros[1]) && contarSnipers() >= ChatServer.MAX_SNIPERS){
+            chatServer.refFrame.addMessage("Conexion rechazada, ya hay " + ChatServer.MAX_SNIPERS + " snipers");
+            avisar("Ya hay " + ChatServer.MAX_SNIPERS + " francotiradores. Entre como superviviente.");
+            isRunning = false;
+            return;
+        }
         //escribimos en el servidor que se conectó tal persona
         this.nombre = msg.parametros[0].trim();
         this.rol = msg.parametros[1];
@@ -117,6 +125,25 @@ public class ThreadServidor extends Thread {
         chatServer.refFrame.addMessage("Conectamos a: " + nombre + " (" + rol + ")");
         avisar("Bienvenido, " + nombre);
         chatServer.partida.agregarJugador(jugador);
+    }
+
+    private int contarSnipers(){
+        int cantidad = 0;
+        for (Jugador j : chatServer.partida.getJugadores()){
+            if (!j.puedeMoverse()) cantidad++;
+        }
+        return cantidad;
+    }
+
+    //AIM: mover la mira del sniper
+    private void apuntar(Mensaje msg){
+        try {
+            int fila = Integer.parseInt(msg.parametros[0]);
+            int columna = Integer.parseInt(msg.parametros[1]);
+            chatServer.partida.apuntar(jugador, fila, columna);
+        } catch (NumberFormatException ex) {
+            //coordenadas inválidas: se ignora
+        }
     }
 
     //SHOOT: el resultado (acertó, falló, sin balas...) solo se lo decimos al sniper
