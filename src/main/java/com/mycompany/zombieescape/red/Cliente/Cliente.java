@@ -30,7 +30,8 @@ public class Cliente {
     String rol;
 
     //a quién le avisa ThreadCliente lo que llega (la ventana del juego)
-    private EscuchaCliente escucha;
+    //volatile: la cambia el hilo de la ventana y la lee ThreadCliente
+    private volatile EscuchaCliente escucha;
 
     public Cliente() {
     }

@@ -4,6 +4,7 @@
  */
 package com.mycompany.zombieescape.red.Cliente;
 
+import com.mycompany.zombieescape.gui.VentanaJuego;
 
 /**
  * Ventana inicial: el jugador escribe su nombre y elige su rol.
@@ -236,11 +237,6 @@ public class VentanaLogin extends javax.swing.JFrame {
         lblError.setText(" ");
         rol = rbSniper.isSelected() ? "SNIPER" : "SUPERVIVIENTE";
         btnEntrar.setEnabled(false);
-        if (!cliente.conectarCliente(nombre, rol)) {
-            lblError.setText("No se pudo conectar con el servidor.");
-            btnEntrar.setEnabled(true);   // que pueda intentar otra vez
-            return;
-        }
         iniciarJuego(nombre, rol);
     }//GEN-LAST:event_btnEntrarActionPerformed
 
@@ -259,12 +255,17 @@ public class VentanaLogin extends javax.swing.JFrame {
 
     // Aquí se conecta con la parte de red
     private void iniciarJuego(String nombre, String rol) {
-        // Paso 4: aquí se abre la ventana del juego con el cliente ya conectado
-        // new VentanaJuego(cliente).setVisible(true);
-        // dispose();
-
-        javax.swing.JOptionPane.showMessageDialog(this,
-                "Nombre: " + nombre + "\nRol: " + rol);
+        // Primero la ventana (se suscribe al cliente) y después la conexión,
+        // así no se pierde ningún mensaje que mande el servidor al entrar
+        VentanaJuego ventana = new VentanaJuego(cliente, nombre, rol);
+        if (!cliente.conectarCliente(nombre, rol)) {
+            ventana.dispose();
+            lblError.setText("No se pudo conectar con el servidor.");
+            btnEntrar.setEnabled(true);   // que pueda intentar otra vez
+            return;
+        }
+        ventana.setVisible(true);
+        dispose();   // cierra el login
     }
 
     /**

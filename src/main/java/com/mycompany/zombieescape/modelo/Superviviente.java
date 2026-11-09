@@ -3,6 +3,8 @@ package com.mycompany.zombieescape.modelo;
 public class Superviviente extends Jugador implements IMovible {
     public static final int DURACION_TARJETA = 30000;   // ms que dura la tarjeta de respawn
     public static final int PROTECCION = 2000;          // ms invisible a zombies al revivir
+    public static final int ESPERA_MOVIMIENTO = 150;    // ms entre pasos (el cliente manda a este ritmo)
+    private static final int TOLERANCIA = 40;           // margen por el retraso de la red
 
     private Direccion direccion = Direccion.ABAJO;
     private Direccion movimientoPendiente;   // lo que pidió el usuario con las flechas
@@ -12,6 +14,7 @@ public class Superviviente extends Jugador implements IMovible {
     private long momentoMuerte;              // cuándo murió (para que la tarjeta venza)
     private boolean tarjetaActiva;           // true mientras se le pueda rescatar
     private long protegidoHasta;             // hasta cuándo los zombies no lo ven
+    private long ultimoMovimiento;           // cuándo dio su último paso
 
     public Superviviente(String nombre) {
         super(nombre);
@@ -66,6 +69,11 @@ public class Superviviente extends Jugador implements IMovible {
         protegidoHasta = System.currentTimeMillis() + PROTECCION;
     }
 
+    // Evita que se mueva más rápido de lo permitido (por ejemplo, con un cliente modificado)
+    public boolean listoParaMover() {
+        return System.currentTimeMillis() - ultimoMovimiento >= ESPERA_MOVIMIENTO - TOLERANCIA;
+    }
+
     // El servidor guarda hacia dónde quiere ir el usuario; mover() lo ejecuta
     public void pedirMovimiento(Direccion d) {
         movimientoPendiente = d;
@@ -77,6 +85,7 @@ public class Superviviente extends Jugador implements IMovible {
 
         direccion = movimientoPendiente;
         movimientoPendiente = null;
+        ultimoMovimiento = System.currentTimeMillis();
 
         Posicion destino = posicion.siguiente(direccion);
         if (mapa.esCaminable(destino)) {

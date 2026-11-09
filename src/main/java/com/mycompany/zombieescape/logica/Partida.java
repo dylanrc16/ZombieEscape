@@ -159,6 +159,7 @@ public class Partida {
         if (!j.isVivo() || !j.puedeMoverse()) return;   // espectadores y snipers no caminan
 
         Superviviente s = (Superviviente) j;
+        if (!s.listoParaMover()) return;                // muy pronto desde su último paso
         boolean yaHabiaEscapado = s.isEscapo();
         s.pedirMovimiento(d);
         s.mover(mapa);
