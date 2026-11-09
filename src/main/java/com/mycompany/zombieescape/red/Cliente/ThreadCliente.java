@@ -49,6 +49,10 @@ public class ThreadCliente extends Thread{
                     String emisor = msg.parametros[0];
                     String texto = msg.parametros[1];
                     escucha.mostrarMensaje(emisor + ": " + texto);
+                }else if (msg.tipo.equals("PRIVADO")){
+                    //mensaje privado: lo ven solo el que lo mandó y el que lo recibe
+                    escucha.mostrarMensaje("[Privado] " + msg.parametros[0] + " → "
+                            + msg.parametros[1] + ": " + msg.parametros[2]);
                 }else if (msg.tipo.equals("INFO")){
                     //aviso del servidor solo para mí (resultado del disparo, bienvenida...)
                     escucha.mostrarMensaje("[Servidor] " + msg.parametros[0]);

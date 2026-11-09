@@ -22,6 +22,7 @@ import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.text.DefaultCaret;
 import javax.swing.text.JTextComponent;
 
 /**
@@ -40,6 +41,10 @@ public class VentanaJuego extends javax.swing.JFrame implements EscuchaCliente {
     private int nivelMostrado = -1;       // para ajustar la ventana solo cuando cambia el mapa
     private boolean apuntando;            // sniper: true = mira de 3x3, false = ve todo el mapa
 
+    private static final String TODOS = "Todos";
+    private static final int MAX_CHAT = 200;                    // caracteres por mensaje
+    private ArrayList<String> destinos = new ArrayList<>();     // nombres que hay en el combo (sin "Todos")
+
     public VentanaJuego(Cliente cliente, String nombre, String rol) {
         initComponents();
         this.cliente = cliente;
@@ -52,6 +57,8 @@ public class VentanaJuego extends javax.swing.JFrame implements EscuchaCliente {
         panelMapa.setPreferredSize(new java.awt.Dimension(640, 384));   // tamaño mientras no hay mapa
         pack();
         setLocationRelativeTo(null);
+
+        configurarChat();
 
         // Me suscribo ANTES de conectar, para no perder los primeros mensajes
         cliente.setEscucha(this);
@@ -150,6 +157,64 @@ public class VentanaJuego extends javax.swing.JFrame implements EscuchaCliente {
         return getFocusOwner() instanceof JTextComponent && ((JTextComponent) getFocusOwner()).isEditable();
     }
 
+    // ================== Chat ==================
+
+    private void configurarChat() {
+        cmbDestino.addItem(TODOS);
+        // El chat baja solo cuando llega un mensaje nuevo
+        ((DefaultCaret) txaChat.getCaret()).setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+
+        // Hacer clic en el mapa le devuelve el teclado al juego (para moverse con las flechas)
+        panelMapa.setFocusable(true);
+        panelMapa.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                panelMapa.requestFocusInWindow();
+            }
+        });
+        // Escape en el campo del chat también vuelve al juego
+        txtMensaje.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "volverAlJuego");
+        txtMensaje.getActionMap().put("volverAlJuego", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                panelMapa.requestFocusInWindow();
+            }
+        });
+    }
+
+    // Enter en el campo o el botón Enviar
+    private void enviarChat() {
+        String texto = txtMensaje.getText().trim();
+        if (texto.isEmpty()) return;
+        if (texto.length() > MAX_CHAT) texto = texto.substring(0, MAX_CHAT);
+
+        String destino = (String) cmbDestino.getSelectedItem();
+        if (destino == null || destino.equals(TODOS)) {
+            cliente.enviarChat(texto);
+        } else {
+            cliente.enviarPrivado(destino, texto);
+        }
+        txtMensaje.setText("");
+        panelMapa.requestFocusInWindow();   // después de escribir, las flechas vuelven a mover
+    }
+
+    // El combo tiene "Todos" y a los demás jugadores. Solo se rehace si alguien entró o salió,
+    // y se conserva lo que estaba seleccionado.
+    private void actualizarDestinos(EstadoJuego estado) {
+        ArrayList<String> nombres = new ArrayList<>();
+        for (Jugador j : estado.getJugadores()) {
+            if (!j.getNombre().equals(miNombre)) nombres.add(j.getNombre());
+        }
+        if (nombres.equals(destinos)) return;
+
+        Object seleccionado = cmbDestino.getSelectedItem();
+        destinos = nombres;
+        cmbDestino.removeAllItems();
+        cmbDestino.addItem(TODOS);
+        for (String n : nombres) cmbDestino.addItem(n);
+        cmbDestino.setSelectedItem(nombres.contains(seleccionado) ? seleccionado : TODOS);
+    }
+
     // ================== Mouse del sniper ==================
 
     // Clic derecho: entra en modo apuntar (mira 3x3 donde hizo clic) o sale de él.
@@ -211,9 +276,15 @@ public class VentanaJuego extends javax.swing.JFrame implements EscuchaCliente {
         SwingUtilities.invokeLater(() -> actualizar(estado));
     }
 
+    // Todo va al chat; los avisos del servidor también se ven junto al panel (ej. resultado del disparo)
     @Override
     public void mostrarMensaje(String texto) {
-        SwingUtilities.invokeLater(() -> lblAviso.setText("<html>" + escaparHtml(texto) + "</html>"));
+        SwingUtilities.invokeLater(() -> {
+            txaChat.append(texto + "\n");
+            if (texto.startsWith("[Servidor]")) {
+                lblAviso.setText("<html>" + escaparHtml(texto) + "</html>");
+            }
+        });
     }
 
     private void actualizar(EstadoJuego estado) {
@@ -222,6 +293,7 @@ public class VentanaJuego extends javax.swing.JFrame implements EscuchaCliente {
             lblEstado.setText("Esperando inicio...");
             lblNivel.setText("Nivel: -");
             txaJugadores.setText(textoJugadores(estado));
+            actualizarDestinos(estado);
             return;
         }
 
@@ -242,6 +314,7 @@ public class VentanaJuego extends javax.swing.JFrame implements EscuchaCliente {
         lblTiempo.setText("Tiempo: " + formatoTiempo(estado.getSegundos()));
         lblEstado.setText(textoEstado(estado.getEstado()));
         txaJugadores.setText(textoJugadores(estado));
+        actualizarDestinos(estado);
     }
 
     // Mientras apunta, la mira se centra donde el servidor la tiene; las balas salen de la foto
@@ -345,6 +418,13 @@ public class VentanaJuego extends javax.swing.JFrame implements EscuchaCliente {
         txaJugadores = new javax.swing.JTextArea();
         lblAviso = new javax.swing.JLabel();
         lblControles = new javax.swing.JLabel();
+        panelChat = new javax.swing.JPanel();
+        scrollChat = new javax.swing.JScrollPane();
+        txaChat = new javax.swing.JTextArea();
+        panelEnviar = new javax.swing.JPanel();
+        cmbDestino = new javax.swing.JComboBox<>();
+        txtMensaje = new javax.swing.JTextField();
+        btnEnviar = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Zombi Escape");
@@ -437,11 +517,66 @@ public class VentanaJuego extends javax.swing.JFrame implements EscuchaCliente {
 
         getContentPane().add(panelInfo, java.awt.BorderLayout.EAST);
 
+        panelChat.setBackground(new java.awt.Color(24, 24, 27));
+        panelChat.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        panelChat.setPreferredSize(new java.awt.Dimension(600, 170));
+        panelChat.setLayout(new java.awt.BorderLayout(0, 6));
+
+        scrollChat.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(40, 40, 45)));
+
+        txaChat.setEditable(false);
+        txaChat.setBackground(new java.awt.Color(40, 40, 45));
+        txaChat.setColumns(20);
+        txaChat.setFont(new java.awt.Font("SansSerif", 0, 13)); // NOI18N
+        txaChat.setForeground(new java.awt.Color(228, 228, 231));
+        txaChat.setLineWrap(true);
+        txaChat.setRows(5);
+        txaChat.setWrapStyleWord(true);
+        txaChat.setFocusable(false);
+        scrollChat.setViewportView(txaChat);
+
+        panelChat.add(scrollChat, java.awt.BorderLayout.CENTER);
+
+        panelEnviar.setBackground(new java.awt.Color(24, 24, 27));
+        panelEnviar.setLayout(new java.awt.BorderLayout(6, 0));
+
+        cmbDestino.setToolTipText("A quién le escribe");
+        panelEnviar.add(cmbDestino, java.awt.BorderLayout.WEST);
+
+        txtMensaje.setBackground(new java.awt.Color(40, 40, 45));
+        txtMensaje.setFont(new java.awt.Font("SansSerif", 0, 13)); // NOI18N
+        txtMensaje.setForeground(new java.awt.Color(228, 228, 231));
+        txtMensaje.setCaretColor(new java.awt.Color(228, 228, 231));
+        txtMensaje.addActionListener(this::txtMensajeActionPerformed);
+        panelEnviar.add(txtMensaje, java.awt.BorderLayout.CENTER);
+
+        btnEnviar.setBackground(new java.awt.Color(120, 200, 80));
+        btnEnviar.setFont(new java.awt.Font("SansSerif", 1, 13)); // NOI18N
+        btnEnviar.setForeground(new java.awt.Color(24, 24, 27));
+        btnEnviar.setText("Enviar");
+        btnEnviar.setFocusable(false);
+        btnEnviar.addActionListener(this::btnEnviarActionPerformed);
+        panelEnviar.add(btnEnviar, java.awt.BorderLayout.EAST);
+
+        panelChat.add(panelEnviar, java.awt.BorderLayout.SOUTH);
+
+        getContentPane().add(panelChat, java.awt.BorderLayout.SOUTH);
+
         pack();
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
+    private void txtMensajeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtMensajeActionPerformed
+        enviarChat();   // Enter en el campo
+    }//GEN-LAST:event_txtMensajeActionPerformed
+
+    private void btnEnviarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEnviarActionPerformed
+        enviarChat();
+    }//GEN-LAST:event_btnEnviarActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnEnviar;
+    private javax.swing.JComboBox<String> cmbDestino;
     private javax.swing.JLabel lblAviso;
     private javax.swing.JLabel lblBalas;
     private javax.swing.JLabel lblCoordenadas;
@@ -453,9 +588,14 @@ public class VentanaJuego extends javax.swing.JFrame implements EscuchaCliente {
     private javax.swing.JLabel lblTiempo;
     private javax.swing.JLabel lblTitulo;
     private com.mycompany.zombieescape.gui.PanelMapa panelMapa;
+    private javax.swing.JPanel panelChat;
+    private javax.swing.JPanel panelEnviar;
     private javax.swing.JPanel panelInfo;
+    private javax.swing.JScrollPane scrollChat;
     private javax.swing.JScrollPane scrollJugadores;
+    private javax.swing.JTextArea txaChat;
     private javax.swing.JTextArea txaJugadores;
+    private javax.swing.JTextField txtMensaje;
     private javax.swing.JScrollPane scrollMapa;
     // End of variables declaration//GEN-END:variables
 }

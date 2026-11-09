@@ -112,6 +112,13 @@ public class Cliente {
         enviar(msg);
     }
 
+    public void enviarPrivado(String destinatario, String texto){
+        Mensaje msg = new Mensaje("PRIVADO", 2);
+        msg.parametros[0] = destinatario;
+        msg.parametros[1] = texto;
+        enviar(msg);
+    }
+
     //synchronized: el teclado y el chat podrían mandar al mismo tiempo
     private synchronized void enviar(Mensaje msg){
         try {

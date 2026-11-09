@@ -100,6 +100,16 @@ public class ChatServer implements EscuchaPartida {
 
     }
 
+    //busca la conexión del jugador con ese nombre (para los mensajes privados)
+    public synchronized ThreadServidor buscarCliente(String nombre){
+        for (ThreadServidor ts : threadServidores) {
+            if (ts.getJugador() != null && ts.getJugador().getNombre().equals(nombre)) {
+                return ts;
+            }
+        }
+        return null;
+    }
+
     //mandar un msg a un solo cliente
     public synchronized void enviarA(ThreadServidor ts, Mensaje msg){
         try {

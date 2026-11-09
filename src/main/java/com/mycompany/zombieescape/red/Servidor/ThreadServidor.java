@@ -57,10 +57,13 @@ public class ThreadServidor extends Thread {
                 }else if (jugador == null){
                     //sin NOMBRE primero no se acepta nada más
                 }else if (msg.tipo.equals("MENSAJE")){
+                    if (vacio(msg.parametros[1])) continue;
                     //el emisor lo pone el servidor, así nadie se hace pasar por otro
                     msg.parametros[0] = nombre;
                     chatServer.refFrame.addMessage(nombre + ": " + msg.parametros[1]);
                     chatServer.broadcast(msg);
+                }else if (msg.tipo.equals("PRIVADO")){
+                    privado(msg);
                 }else if (msg.tipo.equals("MOVE")){
                     //el cliente solo pide; Partida decide si se puede mover
                     Direccion d = Direccion.textoAMovimiento(msg.parametros[0]);
@@ -133,6 +136,29 @@ public class ThreadServidor extends Thread {
             if (!j.puedeMoverse()) cantidad++;
         }
         return cantidad;
+    }
+
+    //PRIVADO: solo lo reciben el destinatario y el que lo mandó (para que lo vea en su chat)
+    private void privado(Mensaje msg){
+        String destino = msg.parametros[0];
+        String texto = msg.parametros[1];
+        if (vacio(destino) || vacio(texto)) return;
+        ThreadServidor otro = chatServer.buscarCliente(destino);
+        if (otro == null || otro == this){
+            avisar(destino + " no está conectado");
+            return;
+        }
+        Mensaje privado = new Mensaje("PRIVADO", 3);
+        privado.parametros[0] = nombre;
+        privado.parametros[1] = destino;
+        privado.parametros[2] = texto;
+        chatServer.enviarA(otro, privado);
+        chatServer.enviarA(this, privado);
+        chatServer.refFrame.addMessage("(privado) " + nombre + " -> " + destino);
+    }
+
+    private boolean vacio(String texto){
+        return texto == null || texto.trim().isEmpty();
     }
 
     //AIM: mover la mira del sniper
