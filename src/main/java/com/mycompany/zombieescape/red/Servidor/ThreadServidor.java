@@ -5,6 +5,7 @@
 package com.mycompany.zombieescape.red.Servidor;
 
 
+import com.mycompany.zombieescape.modelo.Direccion;
 import com.mycompany.zombieescape.modelo.Jugador;
 import com.mycompany.zombieescape.modelo.Sniper;
 import com.mycompany.zombieescape.modelo.Superviviente;
@@ -27,7 +28,7 @@ public class ThreadServidor extends Thread {
     private String nombre;
     private String rol;
     Jugador jugador;
-    
+
     public ThreadServidor(ChatServer chatServer, Socket socket) {
         try {
             this.chatServer = chatServer;
@@ -38,51 +39,106 @@ public class ThreadServidor extends Thread {
             System.getLogger(ThreadServidor.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
         }
     }
-    
+
+    public Jugador getJugador() {
+        return jugador;
+    }
+
     public void run (){
-        
+
         while (isRunning){
-            
+
             try {
                 Mensaje msg = (Mensaje)lectorDeObjetos.readObject();
                 //chatServer.refFrame.addMessage("Recibido: " + msg);
                 //procesar el mensaje recibido en el server desde el cliente
                 if (msg.tipo.equals("NOMBRE")){
-                    if (msg.parametros[0].length() > 0){
-                    //escribimos en el servidor que se conectó tal persona
-                        chatServer.refFrame.addMessage("Conectamos a: " + msg.parametros[0]);
-                        this.nombre = msg.parametros[0];
-                        this.rol = msg.parametros[1];}
-                    else{
-                        chatServer.refFrame.addMessage("Conexion rechazada, cliente sin nombre");   
-                    }
-                    if (rol.equals("SNIPER")){
-                        jugador = new Sniper(nombre);
-                    }
-                    else{
-                        jugador = new Superviviente(nombre);
-                    }
+                    registrar(msg);
+                }else if (jugador == null){
+                    //sin NOMBRE primero no se acepta nada más
                 }else if (msg.tipo.equals("MENSAJE")){
-                    //le reenviamos el mensaje a todos los conectado
+                    //el emisor lo pone el servidor, así nadie se hace pasar por otro
+                    msg.parametros[0] = nombre;
+                    chatServer.refFrame.addMessage(nombre + ": " + msg.parametros[1]);
                     chatServer.broadcast(msg);
                 }else if (msg.tipo.equals("MOVE")){
-                    //le reenviamos el moviento a todos
-                    chatServer.broadcast(msg);
+                    //el cliente solo pide; Partida decide si se puede mover
+                    Direccion d = Direccion.textoAMovimiento(msg.parametros[0]);
+                    chatServer.partida.moverJugador(jugador, d);
+                }else if (msg.tipo.equals("HIDE")){
+                    chatServer.partida.esconder(jugador);
+                }else if (msg.tipo.equals("SHOOT")){
+                    disparar(msg);
                 }
-  
+
             } catch (IOException ex) {
                 isRunning = false;
             } catch (ClassNotFoundException ex) {
                 System.getLogger(ThreadServidor.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
             }
-            
-            
-            
+
+
+
         }
-        
+        //el cliente cerró la ventana o se cayó la conexión
+        chatServer.quitar(this);
+        try {
+            socket.close();
+        } catch (IOException ex) {
+            //ya estaba cerrado
+        }
+
     }
-    
-    
-    
-    
+
+    //NOMBRE: crea el Jugador según el rol y lo mete en la partida
+    private void registrar(Mensaje msg){
+        if (jugador != null) return;   //ya estaba registrado
+        if (msg.parametros[0] == null || msg.parametros[0].trim().isEmpty()){
+            chatServer.refFrame.addMessage("Conexion rechazada, cliente sin nombre");
+            avisar("Conexión rechazada: falta el nombre");
+            isRunning = false;
+            return;
+        }
+        if (chatServer.partida.getJugadores().size() >= ChatServer.MAX_JUGADORES){
+            chatServer.refFrame.addMessage("Conexion rechazada, partida llena");
+            avisar("La partida está llena (máximo " + ChatServer.MAX_JUGADORES + " jugadores)");
+            isRunning = false;
+            return;
+        }
+        //escribimos en el servidor que se conectó tal persona
+        this.nombre = msg.parametros[0].trim();
+        this.rol = msg.parametros[1];
+        if ("SNIPER".equals(rol)){
+            jugador = new Sniper(nombre);
+        }
+        else{
+            jugador = new Superviviente(nombre);
+        }
+        chatServer.refFrame.addMessage("Conectamos a: " + nombre + " (" + rol + ")");
+        avisar("Bienvenido, " + nombre);
+        chatServer.partida.agregarJugador(jugador);
+    }
+
+    //SHOOT: el resultado (acertó, falló, sin balas...) solo se lo decimos al sniper
+    private void disparar(Mensaje msg){
+        try {
+            int fila = Integer.parseInt(msg.parametros[0]);
+            int columna = Integer.parseInt(msg.parametros[1]);
+            String resultado = chatServer.partida.disparar(jugador, fila, columna);
+            avisar(resultado);
+        } catch (NumberFormatException ex) {
+            avisar("Disparo inválido");
+        }
+    }
+
+    //mensaje INFO solo para este cliente
+    private void avisar(String texto){
+        Mensaje info = new Mensaje("INFO", 1);
+        info.parametros[0] = texto;
+        chatServer.enviarA(this, info);
+    }
+
+
+
+
 }

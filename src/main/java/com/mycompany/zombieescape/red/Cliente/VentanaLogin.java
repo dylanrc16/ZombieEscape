@@ -4,12 +4,6 @@
  */
 package com.mycompany.zombieescape.red.Cliente;
 
-import com.mycompany.zombieescape.red.Cliente.Cliente;
-import com.mycompany.zombieescape.red.Cliente.VentanaLogin;
-import com.mycompany.zombieescape.red.Models.Mensaje;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.net.Socket;
 
 /**
  * Ventana inicial: el jugador escribe su nombre y elige su rol.
@@ -25,7 +19,7 @@ public class VentanaLogin extends javax.swing.JFrame {
     
     public VentanaLogin() {
         initComponents();
-        cliente =  new Cliente(this);
+        cliente =  new Cliente();
     }
     
 
@@ -241,20 +235,13 @@ public class VentanaLogin extends javax.swing.JFrame {
 
         lblError.setText(" ");
         rol = rbSniper.isSelected() ? "SNIPER" : "SUPERVIVIENTE";
-        cliente.conectarCliente();
         btnEntrar.setEnabled(false);
-        iniciarJuego(nombre, rol);
-        
-        
-        
-        try {
-            Mensaje msg = new Mensaje("MENSAJE", 2);
-            msg.parametros[0] = this.cliente.nombre; 
-            msg.parametros[1] = txtNombre.getText(); 
-            cliente.escritorDeObjetos.writeObject(msg);
-        } catch (IOException ex) {
-            System.getLogger(VentanaLogin.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        if (!cliente.conectarCliente(nombre, rol)) {
+            lblError.setText("No se pudo conectar con el servidor.");
+            btnEntrar.setEnabled(true);   // que pueda intentar otra vez
+            return;
         }
+        iniciarJuego(nombre, rol);
     }//GEN-LAST:event_btnEntrarActionPerformed
 
     // Efecto al pasar el mouse por encima del botón
@@ -272,8 +259,7 @@ public class VentanaLogin extends javax.swing.JFrame {
 
     // Aquí se conecta con la parte de red
     private void iniciarJuego(String nombre, String rol) {
-        // Cuando Cliente esté listo:
-        // Cliente cliente = new Cliente(nombre, ip, rol);
+        // Paso 4: aquí se abre la ventana del juego con el cliente ya conectado
         // new VentanaJuego(cliente).setVisible(true);
         // dispose();
 

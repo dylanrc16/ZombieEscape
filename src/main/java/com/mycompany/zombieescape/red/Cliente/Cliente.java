@@ -4,11 +4,11 @@
  */
 package com.mycompany.zombieescape.red.Cliente;
 
+import com.mycompany.zombieescape.modelo.Direccion;
 import com.mycompany.zombieescape.red.Models.Mensaje;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import javax.swing.JOptionPane;
 
 /**
  1 objectOut
@@ -18,46 +18,102 @@ import javax.swing.JOptionPane;
  */
 public class Cliente {
     private final String IP = "localhost";
-    private final int PORT = 8084;    
-    
+    private final int PORT = 8084;
+
     Socket socket;
-    VentanaLogin refPantalla;
-    
+
     ThreadCliente threadCliente;
-    
+
     public ObjectOutputStream escritorDeObjetos;
-    
+
     String nombre;
     String rol;
 
-    public Cliente(VentanaLogin refPantalla) {
-        this.refPantalla = refPantalla;
+    //a quién le avisa ThreadCliente lo que llega (la ventana del juego)
+    private EscuchaCliente escucha;
+
+    public Cliente() {
     }
 
     public String getIP() {
         return IP;
     }
-    
-    public void conectarCliente(){
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public String getRol() {
+        return rol;
+    }
+
+    public EscuchaCliente getEscucha() {
+        return escucha;
+    }
+
+    public void setEscucha(EscuchaCliente escucha) {
+        this.escucha = escucha;
+    }
+
+    //devuelve false si no se pudo conectar (servidor apagado, IP mala...)
+    public boolean conectarCliente(String nombre, String rol){
         try {
             socket = new Socket(IP, PORT);
             escritorDeObjetos = new ObjectOutputStream(socket.getOutputStream());
-            
+
             threadCliente = new ThreadCliente(this, socket);
             threadCliente.start();
-            
-            nombre = refPantalla.nombre;
-            rol = refPantalla.rol;
-            //NOMBRE   Diego
+
+            this.nombre = nombre;
+            this.rol = rol;
+            //NOMBRE   Diego   SNIPER
             Mensaje msg = new Mensaje("NOMBRE", 2);
             msg.parametros[0] = nombre;
             msg.parametros[1] = rol;
-            escritorDeObjetos.writeObject(msg);                 
+            enviar(msg);
+            return true;
         } catch (IOException ex) {
             System.getLogger(Cliente.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+            return false;
         }
     }
-    
-    
-    
+
+    // ======== Lo que el jugador le pide al servidor ========
+
+    public void enviarMovimiento(Direccion d){
+        Mensaje msg = new Mensaje("MOVE", 1);
+        msg.parametros[0] = d.name();
+        enviar(msg);
+    }
+
+    public void enviarEsconder(){
+        enviar(new Mensaje("HIDE", 0));
+    }
+
+    public void enviarDisparo(int fila, int columna){
+        Mensaje msg = new Mensaje("SHOOT", 2);
+        msg.parametros[0] = String.valueOf(fila);
+        msg.parametros[1] = String.valueOf(columna);
+        enviar(msg);
+    }
+
+    public void enviarChat(String texto){
+        Mensaje msg = new Mensaje("MENSAJE", 2);
+        msg.parametros[0] = nombre;
+        msg.parametros[1] = texto;
+        enviar(msg);
+    }
+
+    //synchronized: el teclado y el chat podrían mandar al mismo tiempo
+    private synchronized void enviar(Mensaje msg){
+        try {
+            escritorDeObjetos.reset();
+            escritorDeObjetos.writeObject(msg);
+        } catch (IOException ex) {
+            if (escucha != null) escucha.mostrarMensaje("No se pudo enviar: sin conexión");
+        }
+    }
+
+
+
 }
