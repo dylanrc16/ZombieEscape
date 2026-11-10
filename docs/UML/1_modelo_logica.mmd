@@ -1,0 +1,261 @@
+---
+title: "Modelo y lógica del juego"
+---
+classDiagram
+  direction TB
+  class IMovible {
+    <<interface>>
+    +mover(Mapa) void*
+    +getDireccion() Direccion*
+  }
+  class Jugador {
+    <<abstract>>
+    +int ESPERA_MOVIMIENTO$
+    -int TOLERANCIA$
+    #String nombre
+    #Posicion posicion
+    #int puntos
+    #boolean vivo
+    #long ultimoMovimiento
+    +Jugador(String)
+    +getNombre() String
+    +getPosicion() Posicion
+    +getPuntos() int
+    +isVivo() boolean
+    +setPosicion(Posicion) void
+    +sumarPuntos(int) void
+    +morir() void
+    +revivir() void
+    +reiniciarPuntaje() void
+    +listoParaMover() boolean
+    +getImagen() String*
+    +puedeMoverse() boolean*
+  }
+  class Superviviente {
+    +int DURACION_TARJETA$
+    +int PROTECCION$
+    -Direccion direccion
+    -Direccion movimientoPendiente
+    -boolean escondido
+    -boolean escapo
+    -String skin
+    -long momentoMuerte
+    -boolean tarjetaActiva
+    -long protegidoHasta
+    -int segundosEscape
+    -int tiempoTotal
+    +Superviviente(String)
+    +getDireccion() Direccion
+    +isEscondido() boolean
+    +isEscapo() boolean
+    +setSkin(String) void
+    +isTarjetaActiva() boolean
+    +isProtegido() boolean
+    +morir() void
+    +revisarVencimientoTarjeta() void
+    +revivir() void
+    +pedirMovimiento(Direccion) void
+    +mover(Mapa) void
+    +alternarEscondite(Mapa) void
+    +reiniciar(Posicion) void
+    +registrarEscape(int) void
+    +getSegundosEscape() int
+    +getTiempoTotal() int
+    +reiniciarPuntaje() void
+    +getImagen() String
+    +puedeMoverse() boolean
+  }
+  class Sniper {
+    +int BALAS_POR_ESCENARIO$
+    +int RADIOVISION$
+    -int countBalas
+    +Sniper(String)
+    +getBalas() int
+    +tieneBalas() boolean
+    +gastarBala() void
+    +recargar() void
+    +apuntarA(Posicion, Mapa) void
+    +puedeVer(Posicion) boolean
+    +getImagen() String
+    +puedeMoverse() boolean
+  }
+  class Zombie {
+    -Random azar$
+    -int PROBABILIDAD_DOBLAR$
+    -Posicion posicion
+    -Direccion direccion
+    -boolean vivo
+    -int velocidad
+    +Zombie(Posicion, Direccion, int)
+    +getPosicion() Posicion
+    +getDireccion() Direccion
+    +isVivo() boolean
+    +getVelocidad() int
+    +morir() void
+    +mover(Mapa) void
+    +detecta(Superviviente, Mapa) boolean
+    +getImagen() String
+  }
+  class Posicion {
+    -int fila
+    -int columna
+    +Posicion(int, int)
+    +getFila() int
+    +getColumna() int
+    +siguiente(Direccion) Posicion
+    +esIgual(Posicion) boolean
+    +toString() String
+    +distancia(Posicion) int
+  }
+  class Direccion {
+    <<enumeration>>
+    ARRIBA
+    ABAJO
+    IZQUIERDA
+    DERECHA
+    -int dx
+    -int dy
+    -Direccion(int, int)
+    +getDx() int
+    +getDy() int
+    +girarDerecha() Direccion
+    +girarIzquierda() Direccion
+    +opuesta() Direccion
+    +textoAMovimiento(String) Direccion$
+    +getNombre() String
+  }
+  class Mapa {
+    -String nombre
+    -int deteccion
+    -int cantidadZombies
+    -char[][] mapa
+    +Mapa(String, int, int, char[][])
+    +getNombre() String
+    +getDeteccion() int
+    +getCantidadZombies() int
+    +getFilas() int
+    +getColumnas() int
+    +estaDentro(int, int) boolean
+    +getCelda(int, int) char
+    +esCaminable(int, int) boolean
+    +esEscondite(int, int) boolean
+    +esSalida(int, int) boolean
+    +buscarCeldas(char) ArrayList~Posicion~
+    +esCaminable(Posicion) boolean
+    +esEscondite(Posicion) boolean
+    +esSalida(Posicion) boolean
+    +esCaminableZombie(Posicion) boolean
+  }
+  class TipoCelda {
+    +char PARED$
+    +char CAMINO$
+    +char ESCONDITE$
+    +char OBSTACULO$
+    +char ENTRADA$
+    +char SALIDA$
+    +TipoCelda()
+  }
+  class Partida {
+    +String ESPERANDO$
+    +String JUGANDO$
+    +String NIVEL_SUPERADO$
+    +String DERROTA$
+    +String VICTORIA$
+    -String[] SKINS$
+    -int PUNTOS_PRIMERO$
+    -int PUNTOS_MENOS$
+    -int PUNTOS_MINIMO$
+    -int PUNTOS_ZOMBIE$
+    -int PUNTOS_RESCATE$
+    -int FALLO_MIN$
+    -int FALLO_MAX$
+    -int VELOCIDAD_MIN$
+    -int VELOCIDAD_MAX$
+    -int MARGEN_ENTRADA$
+    -int PAUSA_ENTRE_NIVELES$
+    -ArrayList~Mapa~ niveles
+    -EscuchaPartida escucha
+    -Random azar
+    -Mapa mapa
+    -int nivelActual
+    -String estado
+    -ArrayList~Jugador~ jugadores
+    -ArrayList~Zombie~ zombies
+    -ArrayList~HiloZombie~ hilos
+    -long inicioNivel
+    -int segundosFinales
+    -int llegadas
+    +Partida(ArrayList~Mapa~, EscuchaPartida)
+    +agregarJugador(Jugador) void
+    +quitarJugador(Jugador) void
+    +iniciarNivel(int) void
+    -colocar(Jugador, int) void
+    -crearZombies() void
+    -lejosDeLaEntrada(Posicion, ArrayList~Posicion~) boolean
+    +moverJugador(Jugador, Direccion) void
+    +esconder(Jugador) void
+    +apuntar(Jugador, int, int) void
+    +disparar(Jugador, int, int) String
+    +moverZombie(Zombie) void
+    -revisarRescates(Superviviente) void
+    -revisarTarjetas() void
+    -revisarDetecciones() void
+    -revisarFinNivel() void
+    -programarSiguienteNivel() void
+    -continuarConNivel(int) void
+    -detenerZombies() void
+    +terminar() void
+    -zombieEn(Posicion) Zombie
+    -contarSupervivientes() int
+    -calcularSegundos() int
+    -notificar() void
+    +getMapa() Mapa
+    +getEstado() String
+    +getNivel() int
+    +getTotalNiveles() int
+    +getJugadores() ArrayList~Jugador~
+    +getZombies() ArrayList~Zombie~
+    +getSegundos() int
+    +getRanking() ArrayList~Jugador~
+  }
+  class HiloZombie {
+    -Zombie zombie
+    -Partida partida
+    -boolean activo
+    +HiloZombie(Zombie, Partida)
+    +run() void
+    +detener() void
+  }
+  class EscuchaPartida {
+    <<interface>>
+    +partidaCambio() void*
+  }
+  class CargadorMapas {
+    +String CARPETA$
+    +CargadorMapas()
+    +cargar(String) Mapa$
+    +cargarTodos(String) ArrayList~Mapa~$
+  }
+  class Thread {
+    <<Java>>
+  }
+  Jugador <|-- Superviviente : hereda
+  Jugador <|-- Sniper : hereda
+  IMovible <|.. Superviviente : implementa
+  IMovible <|.. Zombie : implementa
+  Jugador --> Posicion : posicion
+  Zombie --> Posicion : posicion
+  Superviviente --> Direccion : direccion
+  Zombie --> Direccion : direccion
+  Posicion ..> Direccion : siguiente()
+  Mapa ..> TipoCelda : símbolos
+  Mapa ..> Posicion : buscarCeldas()
+  CargadorMapas ..> Mapa : crea
+  Partida "1" o-- "1..*" Mapa : niveles
+  Partida "1" o-- "0..10" Jugador : jugadores
+  Partida "1" *-- "0..*" Zombie : zombies
+  Partida "1" *-- "0..*" HiloZombie : hilos
+  HiloZombie --> Zombie : mueve
+  HiloZombie --> Partida : partida
+  Partida --> EscuchaPartida : avisa cambios
+  Thread <|-- HiloZombie

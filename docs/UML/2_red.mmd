@@ -1,0 +1,156 @@
+---
+title: "Red: cliente y servidor (sockets)"
+---
+classDiagram
+  direction TB
+  class ServerFrame {
+    -ChatServer chatServer
+    +ServerFrame()
+    +addMessage(String) void
+    +main(String[]) void$
+  }
+  class ChatServer {
+    -int PORT$
+    +int MAX_JUGADORES$
+    +int MAX_SNIPERS$
+    ~ServerSocket serverSocket
+    ~ServerFrame refFrame
+    ~ArrayList~ThreadServidor~ threadServidores
+    ~ThreadConexiones threadConexiones
+    ~Partida partida
+    +ChatServer(ServerFrame)
+    -runServer() void
+    -mostrarIps() void
+    +agregarCliente(ThreadServidor) void
+    +quitar(ThreadServidor) void
+    +iniciarPartida() void
+    +partidaCambio() void
+    +broadcast(Mensaje) void
+    +buscarCliente(String) ThreadServidor
+    +enviarA(ThreadServidor, Mensaje) void
+  }
+  class ThreadConexiones {
+    -boolean isRunning
+    -boolean isPause
+    -ChatServer chatServer
+    +ThreadConexiones(ChatServer)
+    +run() void
+  }
+  class ThreadServidor {
+    -boolean isRunning
+    -ChatServer chatServer
+    -Socket socket
+    +ObjectInputStream lectorDeObjetos
+    +ObjectOutputStream escritorDeObjetos
+    -String nombre
+    -String rol
+    ~Jugador jugador
+    +ThreadServidor(ChatServer, Socket)
+    +getJugador() Jugador
+    +run() void
+    -registrar(Mensaje) void
+    -contarSnipers() int
+    -privado(Mensaje) void
+    -vacio(String) boolean
+    -apuntar(Mensaje) void
+    -disparar(Mensaje) void
+    -avisar(String) void
+  }
+  class Mensaje {
+    +String tipo
+    +String[] parametros
+    +Serializable objeto
+    +Mensaje(String, int)
+    +toString() String
+  }
+  class EstadoJuego {
+    -Mapa mapa
+    -ArrayList~Jugador~ jugadores
+    -ArrayList~Zombie~ zombies
+    -ArrayList~Jugador~ ranking
+    -int nivel
+    -int totalNiveles
+    -int segundos
+    -String estado
+    +EstadoJuego(Mapa, ArrayList~Jugador~, ArrayList~Zombie~, ArrayList~Jugador~, int, int, int, String)
+    +buscarJugador(String) Jugador
+    +getMapa() Mapa
+    +getJugadores() ArrayList~Jugador~
+    +getZombies() ArrayList~Zombie~
+    +getRanking() ArrayList~Jugador~
+    +getNivel() int
+    +getTotalNiveles() int
+    +getSegundos() int
+    +getEstado() String
+  }
+  class Cliente {
+    -String ip
+    -int PORT
+    -int TIEMPO_CONEXION
+    ~Socket socket
+    ~ThreadCliente threadCliente
+    +ObjectOutputStream escritorDeObjetos
+    ~String nombre
+    ~String rol
+    -EscuchaCliente escucha
+    +Cliente()
+    +getIP() String
+    +getNombre() String
+    +getRol() String
+    +getEscucha() EscuchaCliente
+    +setEscucha(EscuchaCliente) void
+    +conectarCliente(String, String, String) boolean
+    +enviarMovimiento(Direccion) void
+    +enviarEsconder() void
+    +enviarApuntado(int, int) void
+    +enviarDisparo(int, int) void
+    +enviarChat(String) void
+    +enviarPrivado(String, String) void
+    -enviar(Mensaje) void
+  }
+  class ThreadCliente {
+    -boolean isRunning
+    -Cliente cliente
+    -Socket socket
+    -ObjectInputStream lectorDeObjetos
+    +ThreadCliente(Cliente, Socket)
+    +run() void
+  }
+  class EscuchaCliente {
+    <<interface>>
+    +mostrarEstado(EstadoJuego) void*
+    +mostrarMensaje(String) void*
+  }
+  class EscuchaPartida {
+    <<ver diagrama 1>>
+  }
+  class Partida {
+    <<ver diagrama 1>>
+  }
+  class JFrame {
+    <<Java>>
+  }
+  class Thread {
+    <<Java>>
+  }
+  EscuchaPartida <|.. ChatServer : implementa
+  ServerFrame --> ChatServer : chatServer
+  ChatServer --> ServerFrame : refFrame
+  ChatServer "1" *-- "0..*" ThreadServidor : threadServidores
+  ChatServer --> ThreadConexiones : acepta conexiones
+  ThreadConexiones --> ChatServer
+  ThreadServidor --> ChatServer
+  ChatServer --> Partida : partida
+  ChatServer ..> EstadoJuego : crea la foto
+  ThreadServidor ..> Mensaje : lee / escribe
+  Cliente --> ThreadCliente : threadCliente
+  ThreadCliente --> Cliente
+  Cliente --> EscuchaCliente : escucha
+  Cliente ..> Mensaje : envía
+  ThreadCliente ..> EstadoJuego : recibe
+  Mensaje ..> EstadoJuego : objeto
+  Cliente ..> ThreadServidor : socket TCP 8084
+  JFrame <|-- ServerFrame
+  Thread <|-- ThreadConexiones
+  Thread <|-- ThreadServidor
+  Thread <|-- ThreadCliente

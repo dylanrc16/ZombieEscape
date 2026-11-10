@@ -1,0 +1,142 @@
+---
+title: "Interfaz gráfica (cliente)"
+---
+classDiagram
+  direction TB
+  class VentanaLogin {
+    -Cliente cliente
+    +String nombre
+    +String rol
+    -int MAX_NOMBRE$
+    -Color VERDE$
+    -Color VERDE_CLARO$
+    +VentanaLogin()
+    -iniciarJuego(String, String, String) void
+    +main(String[]) void$
+  }
+  class VentanaJuego {
+    -Cliente cliente
+    -String miNombre
+    -String miRol
+    -HiloMovimiento hiloMovimiento
+    -boolean espacioPresionado
+    -int nivelMostrado
+    -boolean apuntando
+    -String TODOS$
+    -int MAX_CHAT$
+    -ArrayList~String~ destinos
+    -String estadoAnterior
+    -Color VERDE$
+    -Color ROJO$
+    -Color AMARILLO$
+    -PanelMapa panelMapa
+    +VentanaJuego(Cliente, String, String)
+    -esSniper() boolean
+    -configurarTeclas() void
+    -configurarEspacio(InputMap, ActionMap) void
+    -enlazarFlecha(InputMap, ActionMap, int, Direccion) void
+    -escribiendo() boolean
+    -configurarChat() void
+    -enviarChat() void
+    -actualizarDestinos(EstadoJuego) void
+    -configurarMouseSniper() void
+    -dejarDeApuntar() void
+    +mostrarEstado(EstadoJuego) void
+    +mostrarMensaje(String) void
+    -actualizar(EstadoJuego) void
+    -actualizarAviso(EstadoJuego) void
+    -miSuperviviente(EstadoJuego) Superviviente
+    -mostrarRanking(EstadoJuego) void
+    -actualizarSniper(EstadoJuego) void
+    -crearFiguras(EstadoJuego) ArrayList~Figura~
+    -textoJugadores(EstadoJuego) String
+    -situacion(Jugador) String
+    -textoEstado(EstadoJuego) String
+    -formatoTiempo(int) String
+    -escaparHtml(String) String
+  }
+  class PanelMapa {
+    +int TAM$
+    -String CARPETA_IMG$
+    -Mapa mapa
+    -ArrayList~Figura~ figuras
+    -Posicion centroVision
+    -int radioVision
+    -Posicion apuntada
+    -Color NIEBLA$
+    -Color ROJO_MIRA$
+    -String avisoTitulo
+    -String avisoDetalle
+    -Color avisoColor
+    -boolean avisoCentrado
+    -HashMap~String, Image~ imagenes
+    +PanelMapa()
+    +setMapa(Mapa) void
+    +setFiguras(ArrayList~Figura~) void
+    +setVision(Posicion, int) void
+    +setAviso(String, String, Color, boolean) void
+    +quitarAviso() void
+    +setApuntada(Posicion) void
+    +celdaEn(int, int) Posicion
+    -dentroDeVision(int, int) boolean
+    -getImagen(String) Image
+    -nombreImagenCelda(char) String
+    #paintComponent(Graphics) void
+    -dibujarAviso(Graphics2D) void
+    -dibujarNiebla(Graphics2D) void
+    -dibujarEtiqueta(Graphics2D, String, int, int) void
+  }
+  class Figura {
+    -String imagen
+    -int fila
+    -int columna
+    -String etiqueta
+    -boolean oculta
+    +Figura(String, int, int, String, boolean)
+    +getImagen() String
+    +getFila() int
+    +getColumna() int
+    +getEtiqueta() String
+    +isOculta() boolean
+  }
+  class HiloMovimiento {
+    -Cliente cliente
+    -boolean activo
+    -ArrayList~Direccion~ presionadas
+    -Direccion toque
+    +HiloMovimiento(Cliente)
+    +presionar(Direccion) void
+    +soltar(Direccion) void
+    +soltarTodo() void
+    -siguienteDireccion() Direccion
+    +detener() void
+    +run() void
+  }
+  class EscuchaCliente {
+    <<ver diagrama 2>>
+  }
+  class Cliente {
+    <<ver diagrama 2>>
+  }
+  class JFrame {
+    <<Java>>
+  }
+  class JPanel {
+    <<Java>>
+  }
+  class Thread {
+    <<Java>>
+  }
+  EscuchaCliente <|.. VentanaJuego : implementa
+  VentanaLogin --> Cliente : cliente
+  VentanaLogin ..> VentanaJuego : abre
+  VentanaJuego --> Cliente : cliente
+  VentanaJuego *-- PanelMapa : panelMapa
+  VentanaJuego *-- HiloMovimiento : hiloMovimiento
+  HiloMovimiento --> Cliente : envía MOVE
+  PanelMapa "1" o-- "0..*" Figura : figuras
+  VentanaJuego ..> Figura : crea
+  JFrame <|-- VentanaLogin
+  JFrame <|-- VentanaJuego
+  JPanel <|-- PanelMapa
+  Thread <|-- HiloMovimiento
