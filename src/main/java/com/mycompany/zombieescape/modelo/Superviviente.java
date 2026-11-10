@@ -134,10 +134,10 @@ public class Superviviente extends Jugador implements IMovible {
         tiempoTotal = 0;
     }
 
-    // Vivo: su ropa. Muerto: su tarjeta de respawn (o nada si ya venció)
+    // Vivo: su ropa mirando hacia donde camina. Muerto: su tarjeta de respawn (o nada si ya venció)
     @Override
     public String getImagen() {
-        if (vivo) return skin;
+        if (vivo) return skin + "_" + direccion.getNombre();   // ej. jugador_gym_derecha (mira hacia donde camina)
         return tarjetaActiva ? "tarjeta_respawn" : null;
     }
 

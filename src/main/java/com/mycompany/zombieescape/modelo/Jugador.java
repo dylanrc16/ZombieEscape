@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 // Lo que comparten todos los humanos: Superviviente y Sniper
 public abstract class Jugador implements Serializable {
-    public static final int ESPERA_MOVIMIENTO = 150;    // ms entre pasos (el cliente manda a este ritmo)
+    public static final int ESPERA_MOVIMIENTO = 250;    // ms entre pasos: 4 celdas/s (el zombie más rápido va a 2)
     private static final int TOLERANCIA = 40;           // margen por el retraso de la red
 
     protected String nombre;
