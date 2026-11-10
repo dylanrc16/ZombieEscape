@@ -74,6 +74,8 @@ public class ThreadServidor extends Thread {
                     apuntar(msg);
                 }else if (msg.tipo.equals("SHOOT")){
                     disparar(msg);
+                }else if (msg.tipo.equals("REINTENTAR")){
+                    reintentar();
                 }
 
             } catch (IOException ex) {
@@ -159,6 +161,17 @@ public class ThreadServidor extends Thread {
 
     private boolean vacio(String texto){
         return texto == null || texto.trim().isEmpty();
+    }
+
+    //REINTENTAR: si de verdad había una derrota, se repite el nivel y se avisa a todos quién lo pidió
+    private void reintentar(){
+        if (chatServer.partida.reintentarNivel()) {
+            Mensaje aviso = new Mensaje("MENSAJE", 2);
+            aviso.parametros[0] = "Servidor";
+            aviso.parametros[1] = nombre + " reinició el nivel " + chatServer.partida.getNivel();
+            chatServer.broadcast(aviso);
+            chatServer.refFrame.addMessage(nombre + " reinició el nivel " + chatServer.partida.getNivel());
+        }
     }
 
     //AIM: mover la mira del sniper

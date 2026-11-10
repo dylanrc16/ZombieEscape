@@ -1,5 +1,5 @@
 NOMBRE=Parque Central
-DETECCION=3
+DETECCION=2
 ZOMBIES=6
 ##########################
 #.............B..........#

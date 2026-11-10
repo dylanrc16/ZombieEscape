@@ -124,6 +124,10 @@ public class Cliente {
         enviar(msg);
     }
 
+    public void enviarReintentar(){
+        enviar(new Mensaje("REINTENTAR", 0));
+    }
+
     //synchronized: el teclado y el chat podrían mandar al mismo tiempo
     private synchronized void enviar(Mensaje msg){
         try {

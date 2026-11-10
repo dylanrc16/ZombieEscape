@@ -12,6 +12,7 @@ public abstract class Jugador implements Serializable {
     protected int puntos;
     protected boolean vivo = true;
     protected long ultimoMovimiento;        // cuándo dio su último paso (o movió la mira)
+    protected int puntosGuardados;          // puntos al empezar el nivel (para reintentarlo)
 
     public Jugador(String nombre) {
         this.nombre = nombre;
@@ -46,6 +47,15 @@ public abstract class Jugador implements Serializable {
     // Partida nueva: el puntaje vuelve a cero (cada hijo puede borrar más cosas)
     public void reiniciarPuntaje() {
         puntos = 0;
+    }
+
+    // Al empezar un nivel se guarda el puntaje; si el nivel se reintenta, se vuelve a él
+    public void guardarPuntaje() {
+        puntosGuardados = puntos;
+    }
+
+    public void restaurarPuntaje() {
+        puntos = puntosGuardados;
     }
 
     // Evita que se mueva más rápido de lo permitido (por ejemplo, con un cliente modificado)

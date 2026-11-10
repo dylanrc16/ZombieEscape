@@ -1,5 +1,5 @@
 NOMBRE=Barrio Industrial
-DETECCION=5
+DETECCION=3
 ZOMBIES=10
 ##############################
 #...B..B.....B........B......#

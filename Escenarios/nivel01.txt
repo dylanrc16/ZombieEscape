@@ -1,5 +1,5 @@
 NOMBRE=Calle Principal
-DETECCION=2
+DETECCION=1
 ZOMBIES=3
 ####################
 #..................#

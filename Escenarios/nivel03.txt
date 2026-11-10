@@ -1,5 +1,5 @@
 NOMBRE=Hospital
-DETECCION=3
+DETECCION=1
 ZOMBIES=5
 ########################
 #......B...............#

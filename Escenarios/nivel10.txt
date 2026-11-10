@@ -1,5 +1,5 @@
 NOMBRE=Puerto
-DETECCION=6
+DETECCION=3
 ZOMBIES=12
 ################################
 #..........B...................#

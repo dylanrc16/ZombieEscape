@@ -93,6 +93,9 @@ public class Partida {
                 j.reiniciarPuntaje();
             }
         }
+        for (Jugador j : jugadores) {              // por si este nivel se pierde y se reintenta
+            j.guardarPuntaje();
+        }
         nivelActual = numero;
         mapa = niveles.get(numero);
         llegadas = 0;
@@ -314,6 +317,17 @@ public class Partida {
             continuarConNivel(siguiente);
         });
         espera.start();
+    }
+
+    // Después de una derrota: el mismo nivel otra vez, con los puntos que tenían al empezarlo.
+    // Devuelve false si no se pudo (no había derrota; por ejemplo, otro jugador ya lo reinició).
+    public synchronized boolean reintentarNivel() {
+        if (!estado.equals(DERROTA)) return false;
+        for (Jugador j : jugadores) {
+            j.restaurarPuntaje();
+        }
+        iniciarNivel(nivelActual);
+        return estado.equals(JUGANDO);
     }
 
     // Solo arranca el siguiente nivel si nadie terminó la partida durante la pausa

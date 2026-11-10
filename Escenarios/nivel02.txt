@@ -1,5 +1,5 @@
 NOMBRE=Mercado
-DETECCION=2
+DETECCION=1
 ZOMBIES=4
 ######################
 #...............B....#

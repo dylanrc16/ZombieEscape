@@ -1,5 +1,5 @@
 NOMBRE=Cementerio
-DETECCION=6
+DETECCION=3
 ZOMBIES=11
 ##############################
 #.................B.....B....#

@@ -15,6 +15,7 @@ import java.io.Serializable;
   HIDE          sin parámetros (entrar/salir del escondite)
   AIM           0: fila     1: columna        (el sniper mueve su mira ahí)
   SHOOT         0: fila     1: columna
+  REINTENTAR    sin parámetros (después de una derrota, repetir el nivel)
 
   Servidor -> Cliente
   ESTADO        objeto: EstadoJuego

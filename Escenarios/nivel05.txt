@@ -1,5 +1,5 @@
 NOMBRE=Estacion de Tren
-DETECCION=4
+DETECCION=2
 ZOMBIES=7
 ##########################
 #.....B............B.....#

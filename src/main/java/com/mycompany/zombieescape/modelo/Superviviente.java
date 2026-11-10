@@ -14,6 +14,7 @@ public class Superviviente extends Jugador implements IMovible {
     private long protegidoHasta;             // hasta cuándo los zombies no lo ven
     private int segundosEscape = -1;         // en qué segundo del nivel escapó (-1 = no ha escapado)
     private int tiempoTotal;                 // suma de sus tiempos de escape en toda la partida
+    private int tiempoGuardado;              // tiempoTotal al empezar el nivel (para reintentarlo)
 
     public Superviviente(String nombre) {
         super(nombre);
@@ -126,6 +127,19 @@ public class Superviviente extends Jugador implements IMovible {
 
     public int getTiempoTotal() {
         return tiempoTotal;
+    }
+
+    // Además de los puntos, guarda y restaura su tiempo de escape
+    @Override
+    public void guardarPuntaje() {
+        super.guardarPuntaje();
+        tiempoGuardado = tiempoTotal;
+    }
+
+    @Override
+    public void restaurarPuntaje() {
+        super.restaurarPuntaje();
+        tiempoTotal = tiempoGuardado;
     }
 
     @Override

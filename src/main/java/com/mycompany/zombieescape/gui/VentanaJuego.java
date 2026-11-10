@@ -72,6 +72,7 @@ public class VentanaJuego extends javax.swing.JFrame implements EscuchaCliente {
         // Me suscribo ANTES de conectar, para no perder los primeros mensajes
         cliente.setEscucha(this);
 
+        btnReintentar.setVisible(false);          // aparece solo cuando se pierde un nivel
         lblBalas.setVisible(esSniper());          // solo el sniper tiene balas
         lblCoordenadas.setVisible(esSniper());    // y necesita saber dónde está apuntando
         if (esSniper()) {
@@ -327,6 +328,10 @@ public class VentanaJuego extends javax.swing.JFrame implements EscuchaCliente {
         actualizarDestinos(estado);
         actualizarAviso(estado);
 
+        boolean derrota = estado.getEstado().equals("DERROTA");
+        if (derrota && !btnReintentar.isVisible()) btnReintentar.setEnabled(true);   // derrota nueva: se puede pedir
+        btnReintentar.setVisible(derrota);
+
         // Al terminar la partida (derrota o victoria) se muestra el ranking, una sola vez
         String actual = estado.getEstado();
         if (!actual.equals(estadoAnterior) && (actual.equals("DERROTA") || actual.equals("VICTORIA"))) {
@@ -344,7 +349,7 @@ public class VentanaJuego extends javax.swing.JFrame implements EscuchaCliente {
                 panelMapa.setAviso("¡Nivel superado!", "El siguiente nivel empieza en unos segundos...", VERDE, true);
                 return;
             case "DERROTA":
-                panelMapa.setAviso("Derrota", "Alguien no logró escapar: pierden todos", ROJO, true);
+                panelMapa.setAviso("Derrota", "Alguien no logró escapar. Pueden usar «Reintentar nivel».", ROJO, true);
                 return;
             case "VICTORIA":
                 panelMapa.setAviso("¡Victoria!", "Escaparon de todos los niveles", VERDE, true);
@@ -392,7 +397,9 @@ public class VentanaJuego extends javax.swing.JFrame implements EscuchaCliente {
                     + j.getPuntos() + "</td><td align='center'>" + tiempo + "</td></tr>";
             puesto++;
         }
-        html += "</table><br><p><i>El tiempo de escape es la suma de lo que tardó en cada nivel.</i></p></body></html>";
+        html += "</table><br><p><i>El tiempo de escape es la suma de lo que tardó en cada nivel.</i></p>"
+                + (gano ? "" : "<p>Pueden jugar otra vez este nivel con el botón <b>Reintentar nivel</b>.</p>")
+                + "</body></html>";
 
         JOptionPane panel = new JOptionPane(html, JOptionPane.PLAIN_MESSAGE);
         JDialog dialogo = panel.createDialog(this, "Ranking final");
@@ -498,6 +505,7 @@ public class VentanaJuego extends javax.swing.JFrame implements EscuchaCliente {
         lblNivel = new javax.swing.JLabel();
         lblTiempo = new javax.swing.JLabel();
         lblEstado = new javax.swing.JLabel();
+        btnReintentar = new javax.swing.JButton();
         lblBalas = new javax.swing.JLabel();
         lblCoordenadas = new javax.swing.JLabel();
         lblJugadoresTitulo = new javax.swing.JLabel();
@@ -557,6 +565,17 @@ public class VentanaJuego extends javax.swing.JFrame implements EscuchaCliente {
         lblEstado.setText("Conectando...");
         lblEstado.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 0, 0, 0));
         panelInfo.add(lblEstado);
+
+        btnReintentar.setBackground(new java.awt.Color(120, 200, 80));
+        btnReintentar.setFont(new java.awt.Font("SansSerif", 1, 13)); // NOI18N
+        btnReintentar.setForeground(new java.awt.Color(24, 24, 27));
+        btnReintentar.setText("Reintentar nivel");
+        btnReintentar.setToolTipText("Jugar otra vez este nivel, con los puntos que tenían al empezarlo");
+        btnReintentar.setAlignmentX(0.0F);
+        btnReintentar.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnReintentar.setFocusable(false);
+        btnReintentar.addActionListener(this::btnReintentarActionPerformed);
+        panelInfo.add(btnReintentar);
 
         lblBalas.setFont(new java.awt.Font("SansSerif", 1, 14)); // NOI18N
         lblBalas.setForeground(new java.awt.Color(230, 180, 80));
@@ -661,8 +680,15 @@ public class VentanaJuego extends javax.swing.JFrame implements EscuchaCliente {
         enviarChat();
     }//GEN-LAST:event_btnEnviarActionPerformed
 
+    private void btnReintentarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnReintentarActionPerformed
+        // Solo se pide: el servidor revisa que haya derrota y reinicia el nivel para todos
+        btnReintentar.setEnabled(false);   // evita mandar el pedido dos veces
+        cliente.enviarReintentar();
+    }//GEN-LAST:event_btnReintentarActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnEnviar;
+    private javax.swing.JButton btnReintentar;
     private javax.swing.JComboBox<String> cmbDestino;
     private javax.swing.JLabel lblAviso;
     private javax.swing.JLabel lblBalas;

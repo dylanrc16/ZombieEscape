@@ -1,5 +1,5 @@
 NOMBRE=Escuela
-DETECCION=4
+DETECCION=2
 ZOMBIES=8
 ############################
 #......B...................#
