@@ -10,7 +10,11 @@ import com.mycompany.zombieescape.modelo.Mapa;
 import com.mycompany.zombieescape.red.Models.EstadoJuego;
 import com.mycompany.zombieescape.red.Models.Mensaje;
 import java.io.IOException;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.ServerSocket;
+import java.net.SocketException;
 import java.util.ArrayList;
 
 /**
@@ -42,6 +46,7 @@ public class ChatServer implements EscuchaPartida {
             refFrame.addMessage("Escenarios cargados: " + mapas.size());
 
             serverSocket =  new ServerSocket(PORT);
+            mostrarIps();
             refFrame.addMessage("Leyendo conexiones ...");
             threadServidores = new ArrayList<ThreadServidor>();
             //CONECTAR
@@ -51,6 +56,24 @@ public class ChatServer implements EscuchaPartida {
         } catch (IOException ex) {
             refFrame.addMessage("Error al iniciar el servidor: " + ex.getMessage());
             System.getLogger(ChatServer.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+    }
+
+    //escribe las IP de esta PC, para saber cuál escribir en el login de los otros jugadores
+    private void mostrarIps(){
+        refFrame.addMessage("Puerto: " + PORT + ". Los jugadores de esta PC pueden usar: localhost");
+        try {
+            for (NetworkInterface red : java.util.Collections.list(NetworkInterface.getNetworkInterfaces())) {
+                if (!red.isUp() || red.isLoopback()) continue;
+                for (InetAddress dir : java.util.Collections.list(red.getInetAddresses())) {
+                    if (dir instanceof Inet4Address) {   //solo IPv4 (las que se escriben tipo 192.168.1.15)
+                        refFrame.addMessage("IP de este servidor: " + dir.getHostAddress()
+                                + "  (" + red.getDisplayName() + ")");
+                    }
+                }
+            }
+        } catch (SocketException ex) {
+            refFrame.addMessage("No se pudo leer la IP de esta PC (use ipconfig)");
         }
     }
 

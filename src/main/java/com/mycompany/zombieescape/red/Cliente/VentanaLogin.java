@@ -50,6 +50,7 @@ public class VentanaLogin extends javax.swing.JFrame {
         lblNombre = new javax.swing.JLabel();
         txtNombre = new javax.swing.JTextField();
         lblIp = new javax.swing.JLabel();
+        txtIp = new javax.swing.JTextField();
         lblRol = new javax.swing.JLabel();
         panelRoles = new javax.swing.JPanel();
         rbSuperviviente = new javax.swing.JRadioButton();
@@ -122,12 +123,27 @@ public class VentanaLogin extends javax.swing.JFrame {
 
         lblIp.setFont(new java.awt.Font("SansSerif", 1, 12)); // NOI18N
         lblIp.setForeground(new java.awt.Color(180, 180, 185));
+        lblIp.setText("IP DEL SERVIDOR");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 0);
         panelFondo.add(lblIp, gridBagConstraints);
+
+        txtIp.setBackground(new java.awt.Color(40, 40, 45));
+        txtIp.setColumns(22);
+        txtIp.setFont(new java.awt.Font("SansSerif", 0, 15)); // NOI18N
+        txtIp.setForeground(new java.awt.Color(230, 230, 230));
+        txtIp.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(70, 70, 78)), javax.swing.BorderFactory.createEmptyBorder(8, 10, 8, 10)));
+        txtIp.setText("localhost");
+        txtIp.setCaretColor(new java.awt.Color(230, 230, 230));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 10, 0);
+        panelFondo.add(txtIp, gridBagConstraints);
 
         lblRol.setFont(new java.awt.Font("SansSerif", 1, 12)); // NOI18N
         lblRol.setForeground(new java.awt.Color(180, 180, 185));
@@ -221,6 +237,7 @@ public class VentanaLogin extends javax.swing.JFrame {
     private void btnEntrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEntrarActionPerformed
 
         nombre = txtNombre.getText().trim();
+        String ip = txtIp.getText().trim();
         
         
 
@@ -232,12 +249,16 @@ public class VentanaLogin extends javax.swing.JFrame {
             lblError.setText("El nombre puede tener máximo " + MAX_NOMBRE + " caracteres.");
             return;
         }
+        if (ip.isEmpty()) {
+            lblError.setText("Escriba la IP del servidor.");
+            return;
+        }
        
 
         lblError.setText(" ");
         rol = rbSniper.isSelected() ? "SNIPER" : "SUPERVIVIENTE";
         btnEntrar.setEnabled(false);
-        iniciarJuego(nombre, rol);
+        iniciarJuego(ip, nombre, rol);
     }//GEN-LAST:event_btnEntrarActionPerformed
 
     // Efecto al pasar el mouse por encima del botón
@@ -254,13 +275,13 @@ public class VentanaLogin extends javax.swing.JFrame {
     }//GEN-LAST:event_rbSniperActionPerformed
 
     // Aquí se conecta con la parte de red
-    private void iniciarJuego(String nombre, String rol) {
+    private void iniciarJuego(String ip, String nombre, String rol) {
         // Primero la ventana (se suscribe al cliente) y después la conexión,
         // así no se pierde ningún mensaje que mande el servidor al entrar
         VentanaJuego ventana = new VentanaJuego(cliente, nombre, rol);
-        if (!cliente.conectarCliente(nombre, rol)) {
+        if (!cliente.conectarCliente(ip, nombre, rol)) {
             ventana.dispose();
-            lblError.setText("No se pudo conectar con el servidor.");
+            lblError.setText("No se pudo conectar con " + ip + ".");
             btnEntrar.setEnabled(true);   // que pueda intentar otra vez
             return;
         }
@@ -291,6 +312,7 @@ public class VentanaLogin extends javax.swing.JFrame {
     private javax.swing.JRadioButton rbSniper;
     private javax.swing.JRadioButton rbSuperviviente;
     private javax.swing.JSeparator separador;
+    private javax.swing.JTextField txtIp;
     private javax.swing.JTextField txtNombre;
     // End of variables declaration//GEN-END:variables
 }

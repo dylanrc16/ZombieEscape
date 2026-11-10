@@ -8,6 +8,7 @@ import com.mycompany.zombieescape.modelo.Direccion;
 import com.mycompany.zombieescape.red.Models.Mensaje;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 
 /**
@@ -17,8 +18,9 @@ import java.net.Socket;
  1 DataInput
  */
 public class Cliente {
-    private final String IP = "localhost";
+    private String ip = "localhost";             //la escribe el jugador en el login
     private final int PORT = 8084;
+    private final int TIEMPO_CONEXION = 3000;   //ms: si en 3 s no responde, la IP está mal o el servidor no está
 
     Socket socket;
 
@@ -37,7 +39,7 @@ public class Cliente {
     }
 
     public String getIP() {
-        return IP;
+        return ip;
     }
 
     public String getNombre() {
@@ -57,9 +59,12 @@ public class Cliente {
     }
 
     //devuelve false si no se pudo conectar (servidor apagado, IP mala...)
-    public boolean conectarCliente(String nombre, String rol){
+    public boolean conectarCliente(String ip, String nombre, String rol){
         try {
-            socket = new Socket(IP, PORT);
+            this.ip = ip;
+            //connect con tiempo límite: sin esto, una IP equivocada deja la ventana trabada ~20 s
+            socket = new Socket();
+            socket.connect(new InetSocketAddress(ip, PORT), TIEMPO_CONEXION);
             escritorDeObjetos = new ObjectOutputStream(socket.getOutputStream());
 
             threadCliente = new ThreadCliente(this, socket);
@@ -74,7 +79,7 @@ public class Cliente {
             enviar(msg);
             return true;
         } catch (IOException ex) {
-            System.getLogger(Cliente.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+            System.out.println("No se pudo conectar con " + ip + ":" + PORT + " -> " + ex.getMessage());
             return false;
         }
     }
