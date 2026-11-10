@@ -60,6 +60,7 @@ public class VentanaJuego extends javax.swing.JFrame implements EscuchaCliente {
         this.miRol = rol;
 
         setTitle("Zombi Escape - " + nombre);
+        Recursos.ponerIcono(this);
         lblJugador.setText(nombre + "  ·  " + (esSniper() ? "Sniper" : "Superviviente"));
         scrollMapa.getViewport().setBackground(java.awt.Color.BLACK);
         panelMapa.setPreferredSize(new java.awt.Dimension(640, 384));   // tamaño mientras no hay mapa

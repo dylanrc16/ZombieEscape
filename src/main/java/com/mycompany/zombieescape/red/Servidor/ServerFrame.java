@@ -16,6 +16,7 @@ public class ServerFrame extends javax.swing.JFrame {
      */
     public ServerFrame() {
         initComponents();
+        com.mycompany.zombieescape.gui.Recursos.ponerIcono(this);
         chatServer = new ChatServer(this);
     }
 

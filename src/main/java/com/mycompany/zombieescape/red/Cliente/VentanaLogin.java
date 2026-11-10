@@ -4,6 +4,7 @@
  */
 package com.mycompany.zombieescape.red.Cliente;
 
+import com.mycompany.zombieescape.gui.Recursos;
 import com.mycompany.zombieescape.gui.VentanaJuego;
 
 /**
@@ -20,6 +21,8 @@ public class VentanaLogin extends javax.swing.JFrame {
     
     public VentanaLogin() {
         initComponents();
+        Recursos.ponerIcono(this);
+        configurarTarjetas();
         cliente =  new Cliente();
     }
     
@@ -27,6 +30,36 @@ public class VentanaLogin extends javax.swing.JFrame {
     private static final int MAX_NOMBRE = 12;
     private static final java.awt.Color VERDE = new java.awt.Color(120, 200, 80);
     private static final java.awt.Color VERDE_CLARO = new java.awt.Color(150, 225, 105);
+    private static final java.awt.Color CAMPO = new java.awt.Color(40, 40, 45);
+    private static final java.awt.Color CAMPO_ELEGIDO = new java.awt.Color(42, 58, 36);
+    private static final java.awt.Color BORDE = new java.awt.Color(70, 70, 78);
+
+    // Cada tarjeta de rol muestra su personaje del juego; la elegida se marca en verde
+    private void configurarTarjetas() {
+        tglSuperviviente.setIcon(icono("jugador_gym_abajo"));
+        tglSniper.setIcon(icono("sniper"));
+        tglSuperviviente.addItemListener(e -> marcarTarjetas());
+        tglSniper.addItemListener(e -> marcarTarjetas());
+        marcarTarjetas();
+    }
+
+    private void marcarTarjetas() {
+        for (javax.swing.JToggleButton t : new javax.swing.JToggleButton[]{tglSuperviviente, tglSniper}) {
+            boolean elegida = t.isSelected();
+            t.setBackground(elegida ? CAMPO_ELEGIDO : CAMPO);
+            // el mismo grosor en las dos, para que la tarjeta no "salte" al elegirla
+            t.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+                    javax.swing.BorderFactory.createLineBorder(elegida ? VERDE : BORDE, 2),
+                    javax.swing.BorderFactory.createEmptyBorder(8, 10, 8, 10)));
+        }
+    }
+
+    // Imagen del juego al doble de tamaño, sin suavizar (para que se vean los píxeles)
+    private javax.swing.ImageIcon icono(String nombre) {
+        java.awt.Image img = Recursos.imagen(nombre);
+        if (img == null) return null;
+        return new javax.swing.ImageIcon(img.getScaledInstance(48, 48, java.awt.Image.SCALE_REPLICATE));
+    }
 
     /**
      * Creates new form VentanaLogin
@@ -43,6 +76,7 @@ public class VentanaLogin extends javax.swing.JFrame {
         java.awt.GridBagConstraints gridBagConstraints;
 
         grupoRoles = new javax.swing.ButtonGroup();
+        panelPortada = new com.mycompany.zombieescape.gui.PanelPortada();
         panelFondo = new javax.swing.JPanel();
         lblTitulo = new javax.swing.JLabel();
         lblSubtitulo = new javax.swing.JLabel();
@@ -53,8 +87,8 @@ public class VentanaLogin extends javax.swing.JFrame {
         txtIp = new javax.swing.JTextField();
         lblRol = new javax.swing.JLabel();
         panelRoles = new javax.swing.JPanel();
-        rbSuperviviente = new javax.swing.JRadioButton();
-        rbSniper = new javax.swing.JRadioButton();
+        tglSuperviviente = new javax.swing.JToggleButton();
+        tglSniper = new javax.swing.JToggleButton();
         lblError = new javax.swing.JLabel();
         btnEntrar = new javax.swing.JButton();
         lblPie = new javax.swing.JLabel();
@@ -67,10 +101,10 @@ public class VentanaLogin extends javax.swing.JFrame {
         panelFondo.setBorder(javax.swing.BorderFactory.createEmptyBorder(40, 60, 30, 60));
         panelFondo.setLayout(new java.awt.GridBagLayout());
 
-        lblTitulo.setFont(new java.awt.Font("SansSerif", 1, 40)); // NOI18N
+        lblTitulo.setFont(new java.awt.Font("SansSerif", 1, 26)); // NOI18N
         lblTitulo.setForeground(new java.awt.Color(120, 200, 80));
         lblTitulo.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lblTitulo.setText("ZOMBI ESCAPE");
+        lblTitulo.setText("Únete a la partida");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -78,10 +112,10 @@ public class VentanaLogin extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 2, 0);
         panelFondo.add(lblTitulo, gridBagConstraints);
 
-        lblSubtitulo.setFont(new java.awt.Font("SansSerif", 2, 14)); // NOI18N
+        lblSubtitulo.setFont(new java.awt.Font("SansSerif", 2, 13)); // NOI18N
         lblSubtitulo.setForeground(new java.awt.Color(128, 128, 128));
         lblSubtitulo.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lblSubtitulo.setText("Escapen juntos o mueran todos");
+        lblSubtitulo.setText("Escriba su nombre, el servidor y elija su rol");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -156,25 +190,36 @@ public class VentanaLogin extends javax.swing.JFrame {
         panelFondo.add(lblRol, gridBagConstraints);
 
         panelRoles.setBackground(new java.awt.Color(24, 24, 27));
-        panelRoles.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
+        panelRoles.setLayout(new java.awt.GridLayout(1, 2, 10, 0));
 
-        rbSuperviviente.setBackground(new java.awt.Color(24, 24, 27));
-        grupoRoles.add(rbSuperviviente);
-        rbSuperviviente.setFont(new java.awt.Font("SansSerif", 0, 14)); // NOI18N
-        rbSuperviviente.setForeground(new java.awt.Color(230, 230, 230));
-        rbSuperviviente.setSelected(true);
-        rbSuperviviente.setText("Superviviente   ");
-        rbSuperviviente.setFocusPainted(false);
-        panelRoles.add(rbSuperviviente);
+        tglSuperviviente.setBackground(new java.awt.Color(40, 40, 45));
+        grupoRoles.add(tglSuperviviente);
+        tglSuperviviente.setFont(new java.awt.Font("SansSerif", 0, 13)); // NOI18N
+        tglSuperviviente.setForeground(new java.awt.Color(230, 230, 230));
+        tglSuperviviente.setSelected(true);
+        tglSuperviviente.setText("<html><center><b>Superviviente</b><br><font color='#a0a0a8'>Escapa del mapa</font></center></html>");
+        tglSuperviviente.setContentAreaFilled(false);
+        tglSuperviviente.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        tglSuperviviente.setFocusPainted(false);
+        tglSuperviviente.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        tglSuperviviente.setIconTextGap(6);
+        tglSuperviviente.setOpaque(true);
+        tglSuperviviente.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        panelRoles.add(tglSuperviviente);
 
-        rbSniper.setBackground(new java.awt.Color(24, 24, 27));
-        grupoRoles.add(rbSniper);
-        rbSniper.setFont(new java.awt.Font("SansSerif", 0, 14)); // NOI18N
-        rbSniper.setForeground(new java.awt.Color(230, 230, 230));
-        rbSniper.setText("Sniper");
-        rbSniper.setFocusPainted(false);
-        rbSniper.addActionListener(this::rbSniperActionPerformed);
-        panelRoles.add(rbSniper);
+        tglSniper.setBackground(new java.awt.Color(40, 40, 45));
+        grupoRoles.add(tglSniper);
+        tglSniper.setFont(new java.awt.Font("SansSerif", 0, 13)); // NOI18N
+        tglSniper.setForeground(new java.awt.Color(230, 230, 230));
+        tglSniper.setText("<html><center><b>Sniper</b><br><font color='#a0a0a8'>Dispara de lejos</font></center></html>");
+        tglSniper.setContentAreaFilled(false);
+        tglSniper.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        tglSniper.setFocusPainted(false);
+        tglSniper.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        tglSniper.setIconTextGap(6);
+        tglSniper.setOpaque(true);
+        tglSniper.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        panelRoles.add(tglSniper);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -228,6 +273,9 @@ public class VentanaLogin extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(20, 0, 0, 0);
         panelFondo.add(lblPie, gridBagConstraints);
 
+        panelPortada.setLayout(new java.awt.BorderLayout());
+        getContentPane().add(panelPortada, java.awt.BorderLayout.WEST);
+
         getContentPane().add(panelFondo, java.awt.BorderLayout.CENTER);
 
         pack();
@@ -256,7 +304,7 @@ public class VentanaLogin extends javax.swing.JFrame {
        
 
         lblError.setText(" ");
-        rol = rbSniper.isSelected() ? "SNIPER" : "SUPERVIVIENTE";
+        rol = tglSniper.isSelected() ? "SNIPER" : "SUPERVIVIENTE";
         btnEntrar.setEnabled(false);
         iniciarJuego(ip, nombre, rol);
     }//GEN-LAST:event_btnEntrarActionPerformed
@@ -269,10 +317,6 @@ public class VentanaLogin extends javax.swing.JFrame {
     private void btnEntrarMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnEntrarMouseExited
         btnEntrar.setBackground(VERDE);
     }//GEN-LAST:event_btnEntrarMouseExited
-
-    private void rbSniperActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rbSniperActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_rbSniperActionPerformed
 
     // Aquí se conecta con la parte de red
     private void iniciarJuego(String ip, String nombre, String rol) {
@@ -308,10 +352,11 @@ public class VentanaLogin extends javax.swing.JFrame {
     private javax.swing.JLabel lblSubtitulo;
     private javax.swing.JLabel lblTitulo;
     private javax.swing.JPanel panelFondo;
+    private com.mycompany.zombieescape.gui.PanelPortada panelPortada;
     private javax.swing.JPanel panelRoles;
-    private javax.swing.JRadioButton rbSniper;
-    private javax.swing.JRadioButton rbSuperviviente;
     private javax.swing.JSeparator separador;
+    private javax.swing.JToggleButton tglSniper;
+    private javax.swing.JToggleButton tglSuperviviente;
     private javax.swing.JTextField txtIp;
     private javax.swing.JTextField txtNombre;
     // End of variables declaration//GEN-END:variables
