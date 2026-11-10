@@ -38,6 +38,12 @@ public class PanelMapa extends JPanel {
     private static final Color NIEBLA = Color.BLACK;   // fuera de la mira no se ve nada
     private static final Color ROJO_MIRA = new Color(230, 60, 60);
 
+    // Aviso escrito encima del mapa (esperando, nivel superado, espectador...). null = ninguno
+    private String avisoTitulo;
+    private String avisoDetalle;
+    private Color avisoColor;
+    private boolean avisoCentrado;    // true: en medio (fin de nivel); false: franja arriba (para no tapar el juego)
+
     // Imágenes ya cargadas, para no leer el archivo cada vez que se repinta
     private HashMap<String, Image> imagenes = new HashMap<>();
 
@@ -62,6 +68,18 @@ public class PanelMapa extends JPanel {
         this.centroVision = centro;
         this.radioVision = radio;
         repaint();
+    }
+
+    public void setAviso(String titulo, String detalle, Color color, boolean centrado) {
+        this.avisoTitulo = titulo;
+        this.avisoDetalle = detalle;
+        this.avisoColor = color;
+        this.avisoCentrado = centrado;
+        repaint();
+    }
+
+    public void quitarAviso() {
+        setAviso(null, null, null, false);
     }
 
     public void setApuntada(Posicion celda) {
@@ -114,7 +132,10 @@ public class PanelMapa extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        if (mapa == null) return;
+        if (mapa == null) {                 // todavía no hay partida: solo el aviso de espera
+            dibujarAviso((Graphics2D) g);
+            return;
+        }
 
         // 1. El mapa
         for (int f = 0; f < mapa.getFilas(); f++) {
@@ -156,6 +177,31 @@ public class PanelMapa extends JPanel {
         // 3. Niebla del sniper y la mira
         if (centroVision != null) {
             dibujarNiebla(g2);
+        }
+
+        // 4. Aviso encima de todo
+        dibujarAviso(g2);
+    }
+
+    // Una franja oscura con un título grande y una línea de detalle
+    private void dibujarAviso(Graphics2D g2) {
+        if (avisoTitulo == null) return;
+        int alto = avisoDetalle == null ? 56 : 80;
+        int y = avisoCentrado ? (getHeight() - alto) / 2 : 0;
+
+        g2.setColor(new Color(0, 0, 0, 190));
+        g2.fillRect(0, y, getWidth(), alto);
+
+        g2.setFont(new Font("SansSerif", Font.BOLD, 26));
+        FontMetrics fm = g2.getFontMetrics();
+        g2.setColor(avisoColor);
+        g2.drawString(avisoTitulo, (getWidth() - fm.stringWidth(avisoTitulo)) / 2, y + 36);
+
+        if (avisoDetalle != null) {
+            g2.setFont(new Font("SansSerif", Font.PLAIN, 14));
+            fm = g2.getFontMetrics();
+            g2.setColor(new Color(228, 228, 231));
+            g2.drawString(avisoDetalle, (getWidth() - fm.stringWidth(avisoDetalle)) / 2, y + 62);
         }
     }
 

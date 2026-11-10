@@ -88,6 +88,11 @@ public class Partida {
         if (contarSupervivientes() == 0) return;   // se necesita al menos un superviviente
 
         detenerZombies();
+        if (numero == 0) {                         // partida nueva: todos empiezan en cero
+            for (Jugador j : jugadores) {
+                j.reiniciarPuntaje();
+            }
+        }
         nivelActual = numero;
         mapa = niveles.get(numero);
         llegadas = 0;
@@ -170,6 +175,7 @@ public class Partida {
         if (!yaHabiaEscapado && s.isEscapo()) {
             int puntos = Math.max(PUNTOS_MINIMO, PUNTOS_PRIMERO - PUNTOS_MENOS * llegadas);
             s.sumarPuntos(puntos);
+            s.registrarEscape(calcularSegundos());   // su tiempo de escape, para el ranking
             llegadas++;
         }
         revisarDetecciones();

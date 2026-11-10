@@ -12,6 +12,8 @@ public class Superviviente extends Jugador implements IMovible {
     private long momentoMuerte;              // cuándo murió (para que la tarjeta venza)
     private boolean tarjetaActiva;           // true mientras se le pueda rescatar
     private long protegidoHasta;             // hasta cuándo los zombies no lo ven
+    private int segundosEscape = -1;         // en qué segundo del nivel escapó (-1 = no ha escapado)
+    private int tiempoTotal;                 // suma de sus tiempos de escape en toda la partida
 
     public Superviviente(String nombre) {
         super(nombre);
@@ -109,6 +111,27 @@ public class Superviviente extends Jugador implements IMovible {
         vivo = true;
         tarjetaActiva = false;
         protegidoHasta = 0;
+        segundosEscape = -1;
+    }
+
+    // Lo llama Partida cuando llega a la salida
+    public void registrarEscape(int segundos) {
+        segundosEscape = segundos;
+        tiempoTotal += segundos;
+    }
+
+    public int getSegundosEscape() {
+        return segundosEscape;
+    }
+
+    public int getTiempoTotal() {
+        return tiempoTotal;
+    }
+
+    @Override
+    public void reiniciarPuntaje() {
+        super.reiniciarPuntaje();
+        tiempoTotal = 0;
     }
 
     // Vivo: su ropa. Muerto: su tarjeta de respawn (o nada si ya venció)

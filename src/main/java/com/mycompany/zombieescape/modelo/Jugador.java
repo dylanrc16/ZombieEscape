@@ -43,6 +43,11 @@ public abstract class Jugador implements Serializable {
         vivo = true; 
     }
 
+    // Partida nueva: el puntaje vuelve a cero (cada hijo puede borrar más cosas)
+    public void reiniciarPuntaje() {
+        puntos = 0;
+    }
+
     // Evita que se mueva más rápido de lo permitido (por ejemplo, con un cliente modificado)
     public boolean listoParaMover() {
         return System.currentTimeMillis() - ultimoMovimiento >= ESPERA_MOVIMIENTO - TOLERANCIA;

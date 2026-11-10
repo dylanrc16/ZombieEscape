@@ -11,6 +11,7 @@ import com.mycompany.zombieescape.red.Cliente.Cliente;
 import com.mycompany.zombieescape.red.Cliente.EscuchaCliente;
 import com.mycompany.zombieescape.red.Models.EstadoJuego;
 import java.awt.event.ActionEvent;
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -20,6 +21,8 @@ import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.text.DefaultCaret;
@@ -44,6 +47,11 @@ public class VentanaJuego extends javax.swing.JFrame implements EscuchaCliente {
     private static final String TODOS = "Todos";
     private static final int MAX_CHAT = 200;                    // caracteres por mensaje
     private ArrayList<String> destinos = new ArrayList<>();     // nombres que hay en el combo (sin "Todos")
+
+    private String estadoAnterior = "";   // para mostrar el ranking una sola vez al terminar
+    private static final Color VERDE = new Color(120, 200, 80);
+    private static final Color ROJO = new Color(230, 70, 70);
+    private static final Color AMARILLO = new Color(230, 180, 80);
 
     public VentanaJuego(Cliente cliente, String nombre, String rol) {
         initComponents();
@@ -292,6 +300,7 @@ public class VentanaJuego extends javax.swing.JFrame implements EscuchaCliente {
         if (mapa == null) {
             lblEstado.setText("Esperando inicio...");
             lblNivel.setText("Nivel: -");
+            panelMapa.setAviso("Esperando jugadores", "El servidor iniciará la partida", VERDE, true);
             txaJugadores.setText(textoJugadores(estado));
             actualizarDestinos(estado);
             return;
@@ -312,9 +321,82 @@ public class VentanaJuego extends javax.swing.JFrame implements EscuchaCliente {
 
         lblNivel.setText("Nivel " + estado.getNivel() + "/" + estado.getTotalNiveles() + ": " + mapa.getNombre());
         lblTiempo.setText("Tiempo: " + formatoTiempo(estado.getSegundos()));
-        lblEstado.setText(textoEstado(estado.getEstado()));
+        lblEstado.setText(textoEstado(estado));
         txaJugadores.setText(textoJugadores(estado));
         actualizarDestinos(estado);
+        actualizarAviso(estado);
+
+        // Al terminar la partida (derrota o victoria) se muestra el ranking, una sola vez
+        String actual = estado.getEstado();
+        if (!actual.equals(estadoAnterior) && (actual.equals("DERROTA") || actual.equals("VICTORIA"))) {
+            mostrarRanking(estado);
+        }
+        estadoAnterior = actual;
+    }
+
+    // ================== Avisos, espectador y ranking ==================
+
+    // Avisos generales en medio del mapa; los personales en una franja arriba para no tapar el juego
+    private void actualizarAviso(EstadoJuego estado) {
+        switch (estado.getEstado()) {
+            case "NIVEL_SUPERADO":
+                panelMapa.setAviso("¡Nivel superado!", "El siguiente nivel empieza en unos segundos...", VERDE, true);
+                return;
+            case "DERROTA":
+                panelMapa.setAviso("Derrota", "Alguien no logró escapar: pierden todos", ROJO, true);
+                return;
+            case "VICTORIA":
+                panelMapa.setAviso("¡Victoria!", "Escaparon de todos los niveles", VERDE, true);
+                return;
+        }
+        Superviviente yo = miSuperviviente(estado);
+        if (yo != null && !yo.isVivo()) {
+            if (yo.isTarjetaActiva()) {
+                panelMapa.setAviso("¡Te atraparon!", "Un compañero puede rescatarte pisando tu tarjeta", ROJO, false);
+            } else {
+                panelMapa.setAviso("Modo espectador", "Ya no puedes jugar, pero puedes ver la partida y chatear", AMARILLO, false);
+            }
+        } else if (yo != null && yo.isEscapo()) {
+            panelMapa.setAviso("¡Escapaste! (" + formatoTiempo(yo.getSegundosEscape()) + ")",
+                    "Espera a tus compañeros", VERDE, false);
+        } else {
+            panelMapa.quitarAviso();
+        }
+    }
+
+    // null si soy sniper o todavía no aparezco en la foto
+    private Superviviente miSuperviviente(EstadoJuego estado) {
+        Jugador yo = estado.buscarJugador(miNombre);
+        return (yo != null && yo.puedeMoverse()) ? (Superviviente) yo : null;
+    }
+
+    // Ventana con el ranking del mejor al peor (no bloquea el juego: se puede seguir chateando)
+    private void mostrarRanking(EstadoJuego estado) {
+        boolean gano = estado.getEstado().equals("VICTORIA");
+        String html = "<html><body style='width:330px'>"
+                + "<h2 style='color:" + (gano ? "#3c9a2c" : "#c03030") + "'>"
+                + (gano ? "¡Victoria!" : "Derrota") + "</h2>"
+                + "<p>Llegaron hasta el nivel " + estado.getNivel() + " de " + estado.getTotalNiveles() + "</p><br>"
+                + "<table cellpadding='4'><tr><th>#</th><th align='left'>Jugador</th><th>Rol</th>"
+                + "<th>Puntos</th><th>Tiempo de escape</th></tr>";
+        int puesto = 1;
+        for (Jugador j : estado.getRanking()) {
+            String tiempo = "-";
+            if (j.puedeMoverse() && ((Superviviente) j).getTiempoTotal() > 0) {
+                tiempo = formatoTiempo(((Superviviente) j).getTiempoTotal());
+            }
+            String nombre = escaparHtml(j.getNombre()) + (j.getNombre().equals(miNombre) ? " (tú)" : "");
+            html += "<tr><td align='center'>" + puesto + "</td><td>" + nombre + "</td><td>"
+                    + (j.puedeMoverse() ? "Superviviente" : "Sniper") + "</td><td align='center'>"
+                    + j.getPuntos() + "</td><td align='center'>" + tiempo + "</td></tr>";
+            puesto++;
+        }
+        html += "</table><br><p><i>El tiempo de escape es la suma de lo que tardó en cada nivel.</i></p></body></html>";
+
+        JOptionPane panel = new JOptionPane(html, JOptionPane.PLAIN_MESSAGE);
+        JDialog dialogo = panel.createDialog(this, "Ranking final");
+        dialogo.setModal(false);
+        dialogo.setVisible(true);
     }
 
     // Mientras apunta, la mira se centra donde el servidor la tiene; las balas salen de la foto
@@ -369,14 +451,18 @@ public class VentanaJuego extends javax.swing.JFrame implements EscuchaCliente {
     private String situacion(Jugador j) {
         if (!j.puedeMoverse()) return "(sniper)";
         Superviviente s = (Superviviente) j;
-        if (s.isEscapo()) return "(escapó)";
+        if (s.isEscapo()) return "(escapó " + formatoTiempo(s.getSegundosEscape()) + ")";
         if (!s.isVivo()) return s.isTarjetaActiva() ? "(caído)" : "(muerto)";
         if (s.isEscondido()) return "(escondido)";
         return "";
     }
 
-    private String textoEstado(String estado) {
-        switch (estado) {
+    private String textoEstado(EstadoJuego e) {
+        Superviviente yo = miSuperviviente(e);
+        if (e.getEstado().equals("JUGANDO") && yo != null && !yo.isVivo()) {
+            return "Modo espectador";
+        }
+        switch (e.getEstado()) {
             case "JUGANDO":        return "¡A escapar!";
             case "NIVEL_SUPERADO": return "¡Nivel superado!";
             case "DERROTA":        return "Derrota";
