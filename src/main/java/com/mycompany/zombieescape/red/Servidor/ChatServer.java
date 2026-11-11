@@ -26,6 +26,10 @@ public class ChatServer implements EscuchaPartida {
     public static final int MAX_JUGADORES = 10;
     public static final int MAX_SNIPERS = 2;      //el enunciado: 1-2 francotiradores
 
+    //candado propio para registrar jugadores (revisar límites + agregar en un solo paso).
+    //Es aparte del de ChatServer para no mezclarlo con el de Partida y evitar un deadlock
+    final Object candadoRegistro = new Object();
+
     ServerSocket serverSocket;
     ServerFrame refFrame;
 
@@ -135,6 +139,7 @@ public class ChatServer implements EscuchaPartida {
 
     //mandar un msg a un solo cliente
     public synchronized void enviarA(ThreadServidor ts, Mensaje msg){
+        if (ts.escritorDeObjetos == null) return;   //todavía no termina de conectarse
         try {
             //reset: sin esto Java reenvía la versión vieja de los objetos que ya mandó
             ts.escritorDeObjetos.reset();

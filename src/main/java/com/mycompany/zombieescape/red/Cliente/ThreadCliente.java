@@ -21,15 +21,11 @@ public class ThreadCliente extends Thread{
     private ObjectInputStream lectorDeObjetos;
 
 
-    public ThreadCliente(Cliente cliente, Socket socket) {
-
-        try {
-            this.cliente = cliente;
-            this.socket = socket;
-            lectorDeObjetos = new ObjectInputStream(socket.getInputStream());
-        } catch (IOException ex) {
-            System.getLogger(ThreadCliente.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
-        }
+    //throws: si el servidor no responde, Cliente se entera y el login muestra el error
+    public ThreadCliente(Cliente cliente, Socket socket) throws IOException {
+        this.cliente = cliente;
+        this.socket = socket;
+        lectorDeObjetos = new ObjectInputStream(socket.getInputStream());
     }
     public void run (){
 
@@ -53,12 +49,17 @@ public class ThreadCliente extends Thread{
                     //mensaje privado: lo ven solo el que lo mandó y el que lo recibe
                     escucha.mostrarMensaje("[Privado] " + msg.parametros[0] + " → "
                             + msg.parametros[1] + ": " + msg.parametros[2]);
+                }else if (msg.tipo.equals("RECHAZO")){
+                    //no nos dejaron entrar: la ventana vuelve al login con el motivo
+                    isRunning = false;
+                    escucha.conexionRechazada(msg.parametros[0]);
                 }else if (msg.tipo.equals("INFO")){
                     //aviso del servidor solo para mí (resultado del disparo, bienvenida...)
                     escucha.mostrarMensaje("[Servidor] " + msg.parametros[0]);
                 }
 
             } catch (IOException ex) {
+                if (!isRunning) break;   //ya se había terminado (por ejemplo, después de un RECHAZO)
                 isRunning = false;
                 EscuchaCliente escucha = cliente.getEscucha();
                 if (escucha != null) escucha.mostrarMensaje("[Servidor] Se perdió la conexión");

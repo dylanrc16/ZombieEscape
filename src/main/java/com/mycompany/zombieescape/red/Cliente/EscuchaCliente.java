@@ -11,4 +11,5 @@ import com.mycompany.zombieescape.red.Models.EstadoJuego;
 public interface EscuchaCliente {
     void mostrarEstado(EstadoJuego estado);   // llegó una foto nueva de la partida
     void mostrarMensaje(String texto);        // chat o aviso del servidor
+    void conexionRechazada(String motivo);    // el servidor no lo dejó entrar (nombre repetido, sala llena...)
 }

@@ -22,6 +22,7 @@ import java.io.Serializable;
   MENSAJE       0: emisor   1: texto          (chat, a todos)
   PRIVADO       0: emisor   1: destinatario   2: texto   (solo a esos dos)
   INFO          0: texto                      (aviso solo para ese cliente)
+  RECHAZO       0: motivo                     (no lo dejaron entrar; el servidor cierra la conexión)
  */
 
 public class Mensaje implements Serializable {

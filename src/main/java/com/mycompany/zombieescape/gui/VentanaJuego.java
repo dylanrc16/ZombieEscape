@@ -286,6 +286,19 @@ public class VentanaJuego extends javax.swing.JFrame implements EscuchaCliente {
         SwingUtilities.invokeLater(() -> actualizar(estado));
     }
 
+    // El servidor no nos dejó entrar: se cierra esta ventana y vuelve el login con el motivo
+    @Override
+    public void conexionRechazada(String motivo) {
+        SwingUtilities.invokeLater(() -> {
+            if (hiloMovimiento != null) hiloMovimiento.detener();
+            cliente.cerrar();
+            dispose();
+            com.mycompany.zombieescape.red.Cliente.VentanaLogin login = new com.mycompany.zombieescape.red.Cliente.VentanaLogin();
+            login.mostrarRechazo(miNombre, cliente.getIP(), miRol, motivo);
+            login.setVisible(true);
+        });
+    }
+
     // Todo va al chat; los avisos del servidor también se ven junto al panel (ej. resultado del disparo)
     @Override
     public void mostrarMensaje(String texto) {

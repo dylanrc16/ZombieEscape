@@ -67,7 +67,11 @@ public class Cliente {
             socket.connect(new InetSocketAddress(ip, PORT), TIEMPO_CONEXION);
             escritorDeObjetos = new ObjectOutputStream(socket.getOutputStream());
 
+            //si al otro lado hay algo que acepta la conexión pero no responde,
+            //no esperamos para siempre: 5 s y se da por fallida
+            socket.setSoTimeout(TIEMPO_CONEXION + 2000);
             threadCliente = new ThreadCliente(this, socket);
+            socket.setSoTimeout(0);   //ya conectados: la partida puede tener silencios largos
             threadCliente.start();
 
             this.nombre = nombre;
@@ -80,7 +84,17 @@ public class Cliente {
             return true;
         } catch (IOException ex) {
             System.out.println("No se pudo conectar con " + ip + ":" + PORT + " -> " + ex.getMessage());
+            cerrar();   //no dejar un socket a medio abrir
             return false;
+        }
+    }
+
+    //cierra la conexión (por ejemplo, cuando el servidor nos rechazó)
+    public void cerrar(){
+        try {
+            if (socket != null) socket.close();
+        } catch (IOException ex) {
+            //ya estaba cerrada
         }
     }
 

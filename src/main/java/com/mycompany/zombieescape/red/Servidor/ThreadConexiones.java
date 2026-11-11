@@ -24,8 +24,8 @@ public class ThreadConexiones extends Thread{
         while (isRunning){
             try {
                 Socket nuevoSocket = chatServer.serverSocket.accept();
+                //el ThreadServidor se agrega a la lista él mismo cuando termina de conectarse
                 ThreadServidor ts = new ThreadServidor(chatServer, nuevoSocket);
-                chatServer.agregarCliente(ts);
                 ts.start();
                 chatServer.refFrame.addMessage("Conexión aceptada, cliente conectado!");
                 chatServer.refFrame.addMessage("Esperando siguiente conexión . . .");                

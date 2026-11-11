@@ -54,6 +54,17 @@ public class VentanaLogin extends javax.swing.JFrame {
         }
     }
 
+    // Vuelve a mostrarse después de un rechazo del servidor, con lo que había escrito y el motivo
+    public void mostrarRechazo(String nombre, String ip, String rol, String motivo) {
+        txtNombre.setText(nombre);
+        txtIp.setText(ip);
+        (("SNIPER".equals(rol)) ? tglSniper : tglSuperviviente).setSelected(true);
+        // con ancho fijo, un motivo largo pasa a dos líneas en vez de estirar la ventana
+        lblError.setText("<html><div style='text-align:center;width:250px'>" + motivo + "</div></html>");
+        pack();
+        setLocationRelativeTo(null);
+    }
+
     // Imagen del juego al doble de tamaño, sin suavizar (para que se vean los píxeles)
     private javax.swing.ImageIcon icono(String nombre) {
         java.awt.Image img = Recursos.imagen(nombre);

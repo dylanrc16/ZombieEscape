@@ -56,6 +56,7 @@ public class Partida {
     private long inicioNivel;
     private int segundosFinales;
     private int llegadas;                      // cuántos han escapado en este nivel
+    private boolean caidoSeFue;                // un superviviente muerto cerró su ventana en este nivel
 
     public Partida(ArrayList<Mapa> niveles, EscuchaPartida escucha) {
         this.niveles = niveles;
@@ -76,8 +77,22 @@ public class Partida {
     }
 
     public synchronized void quitarJugador(Jugador j) {
+        // Si se va alguien que estaba muerto, su muerte cuenta igual: "si uno muere, pierden todos"
+        if (estado.equals(JUGANDO) && j.puedeMoverse() && !j.isVivo()) {
+            caidoSeFue = true;
+        }
         jugadores.remove(j);
-        revisarFinNivel();
+
+        // Se fue el último superviviente: no queda nadie que pueda escapar. Se detienen los
+        // zombies y se vuelve a esperar, para que "Iniciar partida" funcione de nuevo.
+        boolean enCurso = estado.equals(JUGANDO) || estado.equals(NIVEL_SUPERADO);
+        if (enCurso && contarSupervivientes() == 0) {
+            detenerZombies();
+            estado = ESPERANDO;
+            mapa = null;
+        } else {
+            revisarFinNivel();
+        }
         notificar();
     }
 
@@ -99,6 +114,7 @@ public class Partida {
         nivelActual = numero;
         mapa = niveles.get(numero);
         llegadas = 0;
+        caidoSeFue = false;
 
         for (int i = 0; i < jugadores.size(); i++) {
             colocar(jugadores.get(i), i);
@@ -284,7 +300,7 @@ public class Partida {
     private void revisarFinNivel() {
         if (!estado.equals(JUGANDO) || contarSupervivientes() == 0) return;
 
-        boolean algunoMurio = false;
+        boolean algunoMurio = caidoSeFue;
         for (Jugador j : jugadores) {
             if (j.puedeMoverse()) {
                 Superviviente s = (Superviviente) j;
