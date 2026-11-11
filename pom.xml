@@ -21,7 +21,8 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>${exec.mainClass}</mainClass>
+                            <!-- el nombre escrito tal cual, sin variables: asi NetBeans lo encuentra al darle Run -->
+                            <mainClass>com.mycompany.zombieescape.ZombieEscape</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
