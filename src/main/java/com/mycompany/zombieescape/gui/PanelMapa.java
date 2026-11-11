@@ -1,5 +1,6 @@
 package com.mycompany.zombieescape.gui;
 
+import com.mycompany.zombieescape.Rutas;
 import com.mycompany.zombieescape.modelo.Mapa;
 import com.mycompany.zombieescape.modelo.Posicion;
 import com.mycompany.zombieescape.modelo.TipoCelda;
@@ -105,7 +106,7 @@ public class PanelMapa extends JPanel {
     private Image getImagen(String nombre) {
         if (nombre == null) return null;          // por ejemplo, una tarjeta de respawn vencida
         if (!imagenes.containsKey(nombre)) {
-            File archivo = new File(CARPETA_IMG, nombre + ".png");
+            File archivo = Rutas.archivo(CARPETA_IMG, nombre + ".png");
             Image img = null;
             if (archivo.exists()) {
                 img = new ImageIcon(archivo.getPath()).getImage();

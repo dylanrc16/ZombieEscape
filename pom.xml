@@ -7,7 +7,25 @@
     <packaging>jar</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.release>26</maven.compiler.release>
+        <!-- Java 17: compila igual y funciona también en computadoras con un Java más viejo que el 26 -->
+        <maven.compiler.release>17</maven.compiler.release>
         <exec.mainClass>com.mycompany.zombieescape.ZombieEscape</exec.mainClass>
     </properties>
+    <build>
+        <plugins>
+            <!-- Le dice al .jar cuál es su clase principal: así se abre con doble clic o con java -jar -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.2</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>${exec.mainClass}</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

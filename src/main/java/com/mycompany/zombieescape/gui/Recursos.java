@@ -1,5 +1,6 @@
 package com.mycompany.zombieescape.gui;
 
+import com.mycompany.zombieescape.Rutas;
 import java.awt.Image;
 import java.io.File;
 import javax.swing.ImageIcon;
@@ -16,7 +17,7 @@ public class Recursos {
 
     // Img/<nombre>.png, o null si el archivo no está
     public static Image imagen(String nombre) {
-        File archivo = new File(CARPETA_IMG, nombre + ".png");
+        File archivo = Rutas.archivo(CARPETA_IMG, nombre + ".png");
         if (!archivo.exists()) {
             System.out.println("No se encontró la imagen: " + archivo.getPath());
             return null;

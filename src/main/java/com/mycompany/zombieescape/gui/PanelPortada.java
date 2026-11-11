@@ -1,5 +1,6 @@
 package com.mycompany.zombieescape.gui;
 
+import com.mycompany.zombieescape.Rutas;
 import com.mycompany.zombieescape.logica.CargadorMapas;
 import com.mycompany.zombieescape.modelo.Direccion;
 import com.mycompany.zombieescape.modelo.Mapa;
@@ -30,7 +31,7 @@ import javax.swing.Timer;
  */
 public class PanelPortada extends JPanel {
     private static final int TAM = PanelMapa.TAM;                 // 32 px por celda, igual que el juego
-    private static final String ESCENARIO = "Escenarios/nivel06.txt";
+    private static final String ESCENARIO = "nivel06.txt";
     private static final int CANTIDAD_ZOMBIES = 7;
     private static final int PASO_MS = 450;                       // cada cuánto dan un paso
 
@@ -47,7 +48,7 @@ public class PanelPortada extends JPanel {
         setBackground(new Color(12, 12, 14));
         setPreferredSize(new Dimension(380, 400));   // el alto lo pone el formulario de al lado
         try {
-            mapa = CargadorMapas.cargar(ESCENARIO);
+            mapa = CargadorMapas.cargar(Rutas.archivo(CargadorMapas.CARPETA, ESCENARIO).getPath());
             crearZombies();
         } catch (IOException ex) {
             mapa = null;   // sin escenario: la portada se ve solo con el logo
