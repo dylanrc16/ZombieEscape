@@ -18,7 +18,7 @@ import java.io.Serializable;
   REINTENTAR    sin parámetros (después de una derrota, repetir el nivel)
 
   Servidor -> Cliente
-  ESTADO        objeto: EstadoJuego
+  ESTADO        objeto: byte[] con el EstadoJuego ya empaquetado (se arma una vez para todos)
   MENSAJE       0: emisor   1: texto          (chat, a todos)
   PRIVADO       0: emisor   1: destinatario   2: texto   (solo a esos dos)
   INFO          0: texto                      (aviso solo para ese cliente)

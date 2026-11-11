@@ -6,6 +6,7 @@ package com.mycompany.zombieescape.red.Cliente;
 
 import com.mycompany.zombieescape.red.Models.EstadoJuego;
 import com.mycompany.zombieescape.red.Models.Mensaje;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.Socket;
@@ -27,6 +28,13 @@ public class ThreadCliente extends Thread{
         this.socket = socket;
         lectorDeObjetos = new ObjectInputStream(socket.getInputStream());
     }
+    //el servidor manda la foto empaquetada en bytes: aquí se vuelve a armar el EstadoJuego
+    private EstadoJuego desempaquetar(byte[] foto) throws IOException, ClassNotFoundException {
+        try (ObjectInputStream entrada = new ObjectInputStream(new ByteArrayInputStream(foto))) {
+            return (EstadoJuego) entrada.readObject();
+        }
+    }
+
     public void run (){
 
         while (isRunning){
@@ -39,7 +47,7 @@ public class ThreadCliente extends Thread{
 
                 if (msg.tipo.equals("ESTADO")){
                     //foto nueva de la partida: la ventana la dibuja
-                    escucha.mostrarEstado((EstadoJuego) msg.objeto);
+                    escucha.mostrarEstado(desempaquetar((byte[]) msg.objeto));
                 }else if (msg.tipo.equals("MENSAJE")){
                     //pintar el mensaje recibido en el chat
                     String emisor = msg.parametros[0];

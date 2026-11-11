@@ -9,7 +9,9 @@ import com.mycompany.zombieescape.logica.Partida;
 import com.mycompany.zombieescape.modelo.Mapa;
 import com.mycompany.zombieescape.red.Models.EstadoJuego;
 import com.mycompany.zombieescape.red.Models.Mensaje;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -108,23 +110,45 @@ public class ChatServer implements EscuchaPartida {
         }
     }
 
-    //Partida avisa que algo cambió: se manda la foto nueva a todos
+    //Partida avisa que algo cambió: se manda la foto nueva a todos.
+    //Se llama con Partida quieta (dentro de su synchronized): por eso la foto se empaqueta
+    //AQUÍ, una sola vez para todos. Así nunca sale una foto "a medio cambiar" y no se
+    //repite el trabajo por cada cliente. Después cada cartero la manda a su ritmo.
     @Override
     public void partidaCambio(){
         EstadoJuego estado = new EstadoJuego(partida.getMapa(), partida.getJugadores(),
                 partida.getZombies(), partida.getRanking(), partida.getNivel(),
                 partida.getTotalNiveles(), partida.getSegundos(), partida.getEstado());
+        byte[] foto = empaquetar(estado);
+        if (foto == null) return;
         Mensaje msg = new Mensaje("ESTADO", 0);
-        msg.objeto = estado;
-        broadcast(msg);
+        msg.objeto = foto;
+        synchronized (this) {
+            for (ThreadServidor ts : threadServidores) {
+                ts.ponerEstado(msg);
+            }
+        }
     }
 
-    //reenviar un msg a todos los conectados
+    //EstadoJuego -> bytes (el cliente hace lo contrario al recibirlo)
+    private byte[] empaquetar(EstadoJuego estado){
+        try {
+            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+            ObjectOutputStream salida = new ObjectOutputStream(bytes);
+            salida.writeObject(estado);
+            salida.close();
+            return bytes.toByteArray();
+        } catch (IOException ex) {
+            System.getLogger(ChatServer.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+            return null;
+        }
+    }
+
+    //reenviar un msg a todos los conectados (no espera a nadie: cada cartero lo manda)
     public synchronized void broadcast(Mensaje msg){
         for (ThreadServidor ts : threadServidores) {
-            enviarA(ts, msg);
+            ts.encolar(msg);
         }
-
     }
 
     //busca la conexión del jugador con ese nombre (para los mensajes privados)
@@ -137,16 +161,9 @@ public class ChatServer implements EscuchaPartida {
         return null;
     }
 
-    //mandar un msg a un solo cliente
-    public synchronized void enviarA(ThreadServidor ts, Mensaje msg){
-        if (ts.escritorDeObjetos == null) return;   //todavía no termina de conectarse
-        try {
-            //reset: sin esto Java reenvía la versión vieja de los objetos que ya mandó
-            ts.escritorDeObjetos.reset();
-            ts.escritorDeObjetos.writeObject(msg);
-        } catch (IOException ex) {
-            //el cliente se cayó; su ThreadServidor lo va a quitar
-        }
+    //mandar un msg a un solo cliente (se le deja a su cartero)
+    public void enviarA(ThreadServidor ts, Mensaje msg){
+        ts.encolar(msg);
     }
 
 

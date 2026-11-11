@@ -31,6 +31,7 @@ public class ThreadServidor extends Thread {
     private String nombre;
     private String rol;
     Jugador jugador;
+    private HiloEnvio envio;   //el "cartero": el único que escribe en el socket de este cliente
 
     //el constructor ya no lee ni escribe nada: así el hilo que acepta conexiones
     //nunca se queda esperando a un cliente que no manda nada
@@ -43,12 +44,24 @@ public class ThreadServidor extends Thread {
         return jugador;
     }
 
+    //chat y avisos: se le dejan al cartero, que los manda en orden
+    void encolar(Mensaje msg) {
+        if (envio != null) envio.encolar(msg);
+    }
+
+    //la foto de la partida: si la anterior no había salido, se reemplaza
+    void ponerEstado(Mensaje msg) {
+        if (envio != null) envio.ponerEstado(msg);
+    }
+
     public void run (){
         try {
             //los streams se crean aquí, en el hilo de ESTE cliente.
             //Primero el de salida: así el cliente recibe enseguida la cabecera y no se traba
             socket.setSoTimeout(ESPERA_SALUDO);
             escritorDeObjetos = new ObjectOutputStream(socket.getOutputStream());
+            envio = new HiloEnvio(escritorDeObjetos, "cliente");
+            envio.start();
             lectorDeObjetos = new ObjectInputStream(socket.getInputStream());
             chatServer.agregarCliente(this);   //recién ahora puede recibir broadcasts
 
@@ -69,6 +82,7 @@ public class ThreadServidor extends Thread {
         } finally {
             //finally: se ejecuta SIEMPRE, salga como salga el hilo. Así nunca queda un jugador fantasma
             chatServer.quitar(this);
+            if (envio != null) envio.terminar(1000);   //que salga lo pendiente (ej. el RECHAZO) antes de cerrar
             try {
                 socket.close();
             } catch (IOException ex) {
