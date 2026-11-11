@@ -3,6 +3,22 @@ title: "Interfaz gráfica (cliente)"
 ---
 classDiagram
   direction TB
+  class ZombieEscape {
+    +ZombieEscape()
+    +main(String[]) void$
+    -preguntar() void$
+  }
+  class MainServidor {
+    +MainServidor()
+    +main(String[]) void$
+  }
+  class MainCliente {
+    +MainCliente()
+    +main(String[]) void$
+  }
+  class ServerFrame {
+    <<ver diagrama 2>>
+  }
   class VentanaLogin {
     -Cliente cliente
     +String nombre
@@ -10,9 +26,36 @@ classDiagram
     -int MAX_NOMBRE$
     -Color VERDE$
     -Color VERDE_CLARO$
+    -Color CAMPO$
+    -Color CAMPO_ELEGIDO$
+    -Color BORDE$
+    -PanelPortada panelPortada
     +VentanaLogin()
+    -configurarTarjetas() void
+    -marcarTarjetas() void
+    +mostrarRechazo(String, String, String, String) void
+    -icono(String) ImageIcon
     -iniciarJuego(String, String, String) void
     +main(String[]) void$
+  }
+  class PanelPortada {
+    -int TAM$
+    -String ESCENARIO$
+    -int CANTIDAD_ZOMBIES$
+    -int PASO_MS$
+    -Mapa mapa
+    -ArrayList~Zombie~ zombies
+    -HashMap~String, Image~ imagenes
+    -Image logo
+    +PanelPortada()
+    -crearZombies() void
+    -darPaso() void
+    +addNotify() void
+    +removeNotify() void
+    -imagen(String) Image
+    -nombreCelda(char) String
+    #paintComponent(Graphics) void
+    -texto(Graphics2D, String, Font, Color, int) void
   }
   class VentanaJuego {
     -Cliente cliente
@@ -42,6 +85,7 @@ classDiagram
     -configurarMouseSniper() void
     -dejarDeApuntar() void
     +mostrarEstado(EstadoJuego) void
+    +conexionRechazada(String) void
     +mostrarMensaje(String) void
     -actualizar(EstadoJuego) void
     -actualizarAviso(EstadoJuego) void
@@ -112,6 +156,15 @@ classDiagram
     +detener() void
     +run() void
   }
+  class Recursos {
+    -String CARPETA_IMG$
+    +Recursos()
+    +imagen(String) Image$
+    +ponerIcono(JFrame) void$
+  }
+  class Rutas {
+    <<ver diagrama 1>>
+  }
   class EscuchaCliente {
     <<ver diagrama 2>>
   }
@@ -136,7 +189,18 @@ classDiagram
   HiloMovimiento --> Cliente : envía MOVE
   PanelMapa "1" o-- "0..*" Figura : figuras
   VentanaJuego ..> Figura : crea
+  ZombieEscape ..> MainServidor : Servidor
+  ZombieEscape ..> MainCliente : Jugar
+  MainServidor ..> ServerFrame : abre
+  MainCliente ..> VentanaLogin : abre
+  VentanaLogin *-- PanelPortada : panelPortada
+  VentanaJuego ..> VentanaLogin : vuelve si hay RECHAZO
+  PanelPortada ..> Recursos : logo
+  PanelMapa ..> Rutas : busca Img
+  Recursos ..> Rutas : busca Img
+  JFrame <|-- ServerFrame
   JFrame <|-- VentanaLogin
+  JPanel <|-- PanelPortada
   JFrame <|-- VentanaJuego
   JPanel <|-- PanelMapa
   Thread <|-- HiloMovimiento

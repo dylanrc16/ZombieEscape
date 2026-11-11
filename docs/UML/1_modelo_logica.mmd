@@ -17,6 +17,7 @@ classDiagram
     #int puntos
     #boolean vivo
     #long ultimoMovimiento
+    #int puntosGuardados
     +Jugador(String)
     +getNombre() String
     +getPosicion() Posicion
@@ -27,6 +28,8 @@ classDiagram
     +morir() void
     +revivir() void
     +reiniciarPuntaje() void
+    +guardarPuntaje() void
+    +restaurarPuntaje() void
     +listoParaMover() boolean
     +getImagen() String*
     +puedeMoverse() boolean*
@@ -44,6 +47,7 @@ classDiagram
     -long protegidoHasta
     -int segundosEscape
     -int tiempoTotal
+    -int tiempoGuardado
     +Superviviente(String)
     +getDireccion() Direccion
     +isEscondido() boolean
@@ -61,6 +65,8 @@ classDiagram
     +registrarEscape(int) void
     +getSegundosEscape() int
     +getTiempoTotal() int
+    +guardarPuntaje() void
+    +restaurarPuntaje() void
     +reiniciarPuntaje() void
     +getImagen() String
     +puedeMoverse() boolean
@@ -185,6 +191,7 @@ classDiagram
     -long inicioNivel
     -int segundosFinales
     -int llegadas
+    -boolean caidoSeFue
     +Partida(ArrayList~Mapa~, EscuchaPartida)
     +agregarJugador(Jugador) void
     +quitarJugador(Jugador) void
@@ -202,6 +209,7 @@ classDiagram
     -revisarDetecciones() void
     -revisarFinNivel() void
     -programarSiguienteNivel() void
+    +reintentarNivel() boolean
     -continuarConNivel(int) void
     -detenerZombies() void
     +terminar() void
@@ -232,9 +240,17 @@ classDiagram
   }
   class CargadorMapas {
     +String CARPETA$
+    -String SIMBOLOS$
     +CargadorMapas()
     +cargar(String) Mapa$
+    -hayCamino(Mapa, Posicion) boolean$
     +cargarTodos(String) ArrayList~Mapa~$
+  }
+  class Rutas {
+    +Rutas()
+    +carpeta(String) File$
+    +archivo(String, String) File$
+    -ubicacionDelPrograma() File$
   }
   class Thread {
     <<Java>>
@@ -258,4 +274,5 @@ classDiagram
   HiloZombie --> Zombie : mueve
   HiloZombie --> Partida : partida
   Partida --> EscuchaPartida : avisa cambios
+  CargadorMapas ..> Rutas : busca Escenarios
   Thread <|-- HiloZombie

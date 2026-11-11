@@ -13,6 +13,7 @@ classDiagram
     -int PORT$
     +int MAX_JUGADORES$
     +int MAX_SNIPERS$
+    ~Object candadoRegistro
     ~ServerSocket serverSocket
     ~ServerFrame refFrame
     ~ArrayList~ThreadServidor~ threadServidores
@@ -25,6 +26,7 @@ classDiagram
     +quitar(ThreadServidor) void
     +iniciarPartida() void
     +partidaCambio() void
+    -empaquetar(EstadoJuego) byte[]
     +broadcast(Mensaje) void
     +buscarCliente(String) ThreadServidor
     +enviarA(ThreadServidor, Mensaje) void
@@ -37,6 +39,7 @@ classDiagram
     +run() void
   }
   class ThreadServidor {
+    -int ESPERA_SALUDO$
     -boolean isRunning
     -ChatServer chatServer
     -Socket socket
@@ -45,16 +48,38 @@ classDiagram
     -String nombre
     -String rol
     ~Jugador jugador
+    -HiloEnvio envio
     +ThreadServidor(ChatServer, Socket)
     +getJugador() Jugador
+    ~encolar(Mensaje) void
+    ~ponerEstado(Mensaje) void
     +run() void
+    -procesar(Mensaje) void
+    -param(Mensaje, int) String
     -registrar(Mensaje) void
+    -nombreOcupado(String) boolean
+    -rechazar(String, String) void
     -contarSnipers() int
     -privado(Mensaje) void
     -vacio(String) boolean
+    -reintentar() void
     -apuntar(Mensaje) void
     -disparar(Mensaje) void
     -avisar(String) void
+  }
+  class HiloEnvio {
+    -int MAX_EN_FILA$
+    -ObjectOutputStream salida
+    -LinkedList~Mensaje~ fila
+    -Mensaje estadoPendiente
+    -boolean activo
+    -boolean terminando
+    +HiloEnvio(ObjectOutputStream, String)
+    +encolar(Mensaje) void
+    +ponerEstado(Mensaje) void
+    +terminar(long) void
+    -siguiente() Mensaje
+    +run() void
   }
   class Mensaje {
     +String tipo
@@ -100,12 +125,14 @@ classDiagram
     +getEscucha() EscuchaCliente
     +setEscucha(EscuchaCliente) void
     +conectarCliente(String, String, String) boolean
+    +cerrar() void
     +enviarMovimiento(Direccion) void
     +enviarEsconder() void
     +enviarApuntado(int, int) void
     +enviarDisparo(int, int) void
     +enviarChat(String) void
     +enviarPrivado(String, String) void
+    +enviarReintentar() void
     -enviar(Mensaje) void
   }
   class ThreadCliente {
@@ -114,12 +141,14 @@ classDiagram
     -Socket socket
     -ObjectInputStream lectorDeObjetos
     +ThreadCliente(Cliente, Socket)
+    -desempaquetar(byte[]) EstadoJuego
     +run() void
   }
   class EscuchaCliente {
     <<interface>>
     +mostrarEstado(EstadoJuego) void*
     +mostrarMensaje(String) void*
+    +conexionRechazada(String) void*
   }
   class EscuchaPartida {
     <<ver diagrama 1>>
@@ -150,7 +179,10 @@ classDiagram
   ThreadCliente ..> EstadoJuego : recibe
   Mensaje ..> EstadoJuego : objeto
   Cliente ..> ThreadServidor : socket TCP 8084
+  ThreadServidor "1" *-- "1" HiloEnvio : envio
+  HiloEnvio ..> Mensaje : escribe en el socket
   JFrame <|-- ServerFrame
   Thread <|-- ThreadConexiones
   Thread <|-- ThreadServidor
+  Thread <|-- HiloEnvio
   Thread <|-- ThreadCliente
